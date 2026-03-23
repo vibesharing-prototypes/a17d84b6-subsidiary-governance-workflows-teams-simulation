@@ -82,6 +82,7 @@ const FAKE_TEAM_CHATS: FakeChat[] = [
 const SIDEBAR_PER_PERSPECTIVE: Record<string, SidebarConfig> = {
   "gov-agent":         { urgentIds: ["gov-agent"], fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
   "meeting-materials": { urgentIds: ["meeting-materials"], fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
+  "q3-portfolio":      { urgentIds: ["q3-portfolio"], fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
 };
 
 /* ================================================================== */
@@ -154,6 +155,92 @@ const CHATS: Chat[] = [
             bullets: ["All entities under Acme's subsidiary tree have been scanned — no other director terms expire in the next 90 days."],
           }},
           { from: "bot", text: "The resolution is ready for execution in Diligent Entities. I'll track the filing and notify you once Companies House confirms the appointment.", time: "9:23 AM" },
+        ],
+      },
+    ],
+  },
+
+  /* ---- Q3 Portfolio — 5 Subsidiaries ---- */
+  {
+    id: "q3-portfolio",
+    name: "Diligent Governance Agent",
+    initials: "GA",
+    color: "#0078D4",
+    section: "favorites",
+    preview: "14 Q3 governance actions across 5 entities...",
+    previewTime: "10:05 AM",
+    messages: [],
+    steps: [
+      {
+        prompt: "Show me the full Q3 breakdown",
+        userMsg: { from: "user", text: "Show me the full Q3 breakdown across all five entities.", time: "10:07 AM" },
+        botMsgs: [
+          { from: "bot", text: "Here's everything due across your subsidiary portfolio for Q3:", time: "10:07 AM", card: {
+            title: "Q3 Governance Breakdown — 5 Entities",
+            fields: [
+              { label: "🇬🇧 Acme Holdings Europe Ltd.", value: "AGM filing · Confirmation statement · Director register update (3 actions)" },
+              { label: "🇩🇪 Acme GmbH", value: "Supervisory board meeting · Annual financial statements due Sep 1 (2 actions)" },
+              { label: "🇫🇷 Acme SAS", value: "Q3 board meeting · Statutory auditor report · Beneficial ownership update (3 actions)" },
+              { label: "🇪🇸 Acme Iberia S.L.", value: "Director re-election (2 seats) · Annual accounts filing Sep 30 (3 actions)" },
+              { label: "🇮🇹 Acme Italia S.r.l.", value: "Extraordinary general meeting · Quota transfer docs · Notary filing (3 actions)" },
+            ],
+            statusRows: [
+              { icon: "pending", text: "4 actions overdue or due within 30 days", color: "#F85149" },
+              { icon: "pending", text: "6 actions due in 31–60 days", color: "#F0883E" },
+              { icon: "clock",   text: "4 actions scheduled for late Q3", color: "#8B8B8B" },
+            ],
+            buttons: [
+              { label: "Assign tasks & confirm deadlines", style: "primary" },
+              { label: "Export to governance calendar" },
+            ],
+          }},
+        ],
+      },
+      {
+        prompt: "Assign tasks & confirm deadlines",
+        userMsg: { from: "user", text: "Go ahead and assign all tasks with recommended deadlines.", time: "10:09 AM" },
+        botMsgs: [
+          { from: "bot", text: "Matching tasks to owners based on entity jurisdiction and past assignments...", time: "10:09 AM", thinking: true },
+          { from: "bot", text: "", time: "10:10 AM", card: {
+            title: "Tasks Assigned — Q3 Portfolio",
+            statusRows: [
+              { icon: "check", text: "Acme Holdings Europe Ltd. → Marcus Chen · Due Jul 31", color: "#3FB950" },
+              { icon: "check", text: "Acme GmbH → Lena Bauer (DE counsel) · Due Sep 1", color: "#3FB950" },
+              { icon: "check", text: "Acme SAS → Claire Dupont (FR counsel) · Due Aug 15", color: "#3FB950" },
+              { icon: "check", text: "Acme Iberia S.L. → Diego Ruiz (ES counsel) · Due Sep 30", color: "#3FB950" },
+              { icon: "check", text: "Acme Italia S.r.l. → Giulia Marino (IT notary) · Due Aug 20", color: "#3FB950" },
+            ],
+            bullets: [
+              "All 5 owners notified via Teams with task details and jurisdiction requirements",
+              "Deadline reminders set at 14 days and 3 days before each due date",
+              "Local counsel confirmed for DE, FR, ES, and IT filings",
+            ],
+            buttons: [
+              { label: "Generate Q3 governance report", style: "primary" },
+              { label: "View in Diligent Entities" },
+            ],
+          }},
+        ],
+      },
+      {
+        prompt: "Generate Q3 governance report",
+        userMsg: { from: "user", text: "Generate the Q3 governance plan report.", time: "10:11 AM" },
+        botMsgs: [
+          { from: "bot", text: "", time: "10:11 AM", card: {
+            title: "Q3 Governance Plan Generated",
+            statusRows: [
+              { icon: "check", text: "14 tasks across 5 jurisdictions documented", color: "#3FB950" },
+              { icon: "check", text: "Owners, deadlines & local requirements included", color: "#3FB950" },
+              { icon: "check", text: "Compliance calendar synced to Diligent Entities", color: "#3FB950" },
+              { icon: "check", text: "Escalation paths defined for missed deadlines", color: "#3FB950" },
+            ],
+            file: { name: "Acme_Corp_Q3_Subsidiary_Governance_Plan_2026.pdf", size: "1.8 MB" },
+            bullets: [
+              "Report shared with General Counsel and CFO for sign-off",
+              "I'll send you a weekly digest every Monday tracking completion status across all 5 entities",
+            ],
+          }},
+          { from: "bot", text: "You're all set for Q3, Marcus. I'll monitor each entity and flag anything that falls behind or needs your direct attention.", time: "10:11 AM" },
         ],
       },
     ],
@@ -287,13 +374,41 @@ function DiligentAgentIcon({ size = 32, className = "" }: { size?: number; class
 }
 
 const PERSPECTIVES = [
-  { chatId: "gov-agent",         step: 1, name: "Marcus Chen", role: "Director Replacement",  avatar: AVATARS["marcus-chen"], initials: "MC", color: "#0078D4" },
-  { chatId: "meeting-materials", step: 2, name: "Marcus Chen", role: "Meeting Materials",      avatar: AVATARS["marcus-chen"], initials: "MC", color: "#0078D4" },
+  { chatId: "gov-agent",         step: 1, name: "Marcus Chen", role: "Director Replacement",     avatar: AVATARS["marcus-chen"], initials: "MC", color: "#0078D4" },
+  { chatId: "meeting-materials", step: 2, name: "Marcus Chen", role: "Meeting Materials",         avatar: AVATARS["marcus-chen"], initials: "MC", color: "#0078D4" },
+  { chatId: "q3-portfolio",      step: 3, name: "Marcus Chen", role: "Q3 Portfolio Planning",    avatar: AVATARS["marcus-chen"], initials: "MC", color: "#0078D4" },
 ];
 
 /* ================================================================== */
 /*  Page                                                               */
 /* ================================================================== */
+
+const Q3_INTRO_CARD: Msg = {
+  from: "bot", text: "Hi Marcus — I've completed a Q3 compliance scan across your full subsidiary portfolio.", time: "10:05 AM", card: {
+    title: "Q3 Governance Scan — 5 Subsidiaries",
+    fields: [
+      { label: "Scan completed", value: "Today at 10:03 AM" },
+      { label: "Entities scanned", value: "5 subsidiaries across 5 jurisdictions" },
+      { label: "Total actions detected", value: "14 governance tasks", color: "#F0883E" },
+      { label: "Quarter", value: "July 1 – September 30, 2026" },
+    ],
+    statusRows: [
+      { icon: "pending", text: "4 actions overdue or due within 30 days", color: "#F85149" },
+      { icon: "pending", text: "6 actions due in 31–60 days", color: "#F0883E" },
+      { icon: "clock",   text: "4 actions scheduled for late Q3", color: "#8B8B8B" },
+    ],
+  },
+};
+
+const Q3_INTRO_QUESTION: Msg = {
+  from: "bot", text: "I've mapped every filing deadline, board meeting, director obligation, and statutory requirement across all five entities — UK, Germany, France, Spain, and Italy. Would you like to see the full breakdown before I assign tasks and set deadlines?", time: "10:06 AM", card: {
+    buttons: [
+      { label: "Show me the full Q3 breakdown", style: "primary" },
+      { label: "Assign everything automatically" },
+      { label: "Export to governance calendar" },
+    ],
+  },
+};
 
 const MEETING_INTRO_CARD: Msg = {
   from: "bot", text: "Hi Marcus — I've spotted an upcoming board meeting that needs materials prepared.", time: "9:45 AM", card: {
@@ -378,6 +493,23 @@ function TeamsContent() {
 
     setTimeout(() => {
       setChats(prev => prev.map(c => c.id !== "gov-agent" ? c : { ...c, messages: [...c.messages, GOV_AGENT_INTRO_QUESTION] }));
+      scroll();
+    }, 2200);
+  }, [activeChat, scroll]);
+
+  // Q3 Portfolio intro: scan results card, then question
+  const q3IntroRan = useRef(false);
+  useEffect(() => {
+    if (activeChat !== "q3-portfolio" || q3IntroRan.current) return;
+    q3IntroRan.current = true;
+
+    setTimeout(() => {
+      setChats(prev => prev.map(c => c.id !== "q3-portfolio" ? c : { ...c, messages: [...c.messages, Q3_INTRO_CARD] }));
+      scroll();
+    }, 600);
+
+    setTimeout(() => {
+      setChats(prev => prev.map(c => c.id !== "q3-portfolio" ? c : { ...c, messages: [...c.messages, Q3_INTRO_QUESTION] }));
       scroll();
     }, 2200);
   }, [activeChat, scroll]);
