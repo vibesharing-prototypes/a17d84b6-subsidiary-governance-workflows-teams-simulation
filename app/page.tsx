@@ -546,8 +546,8 @@ function TeamsContent() {
   const endRef = useRef<HTMLDivElement>(null);
 
   const chat = chats.find(c => c.id === activeChat)!;
-  const perspective = PERSPECTIVES.find(p => p.chatId === activeChat)!;
-  const sidebarCfg = SIDEBAR_PER_PERSPECTIVE[activeChat] ?? SIDEBAR_PER_PERSPECTIVE["gov-agent"];
+  const perspective = PERSPECTIVES.find(p => p.chatId === activeChat) ?? PERSPECTIVES.find(p => p.chatId === "q3-portfolio")!;
+  const sidebarCfg = SIDEBAR_PER_PERSPECTIVE[activeChat] ?? SIDEBAR_PER_PERSPECTIVE["q3-portfolio"];
   const currentStep = chat.steps[stepIdx[activeChat] ?? 0];
   const hasMore = (stepIdx[activeChat] ?? 0) < chat.steps.length;
 
