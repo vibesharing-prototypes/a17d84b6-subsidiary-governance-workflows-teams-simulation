@@ -57,6 +57,7 @@ interface FakeChat {
 
 interface SidebarConfig {
   urgentIds: string[];
+  teamAgentId?: string;
   fakeTeam: FakeChat[];
 }
 
@@ -80,9 +81,9 @@ const FAKE_TEAM_CHATS: FakeChat[] = [
 ];
 
 const SIDEBAR_PER_PERSPECTIVE: Record<string, SidebarConfig> = {
-  "gov-agent":         { urgentIds: ["gov-agent"], fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
-  "meeting-materials": { urgentIds: ["meeting-materials"], fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
-  "q3-portfolio":      { urgentIds: ["q3-portfolio"], fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
+  "gov-agent":         { urgentIds: ["gov-agent"],                           fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
+  "meeting-materials": { urgentIds: [], teamAgentId: "meeting-materials",    fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
+  "q3-portfolio":      { urgentIds: [], teamAgentId: "q3-portfolio",         fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
 };
 
 /* ================================================================== */
@@ -736,27 +737,46 @@ function TeamsContent() {
             </div>
 
             <div className="flex-1 overflow-y-auto min-h-0">
-              {/* URGENT */}
-              <div className="px-3 py-1">
-                <p className="text-[11px] text-[#F85149] font-semibold px-1 mb-1 uppercase tracking-wider">Urgent</p>
-                {chats.filter(c => sidebarCfg.urgentIds.includes(c.id)).map(conv => (
-                  <button key={conv.id} onClick={() => setActiveChat(conv.id)} className={`w-full flex items-center gap-2.5 px-2 py-2 rounded-md text-left transition-colors ${activeChat === conv.id ? "bg-[#3d3d42]" : "hover:bg-[#2d2d30]"}`}>
-                    {conv.isGroup ? <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-[11px] font-bold shrink-0" style={{ background: conv.color }}>{conv.initials}</div> : <DiligentAgentIcon size={36} />}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[13px] text-white font-semibold truncate">{conv.isGroup ? conv.name : agentDisplayName(conv.id)}</span>
-                        <span className="text-[10px] text-[#F85149] shrink-0 font-medium">{conv.previewTime}</span>
+              {/* URGENT — only shown for scenario 1 */}
+              {sidebarCfg.urgentIds.length > 0 && (
+                <div className="px-3 py-1">
+                  <p className="text-[11px] text-[#F85149] font-semibold px-1 mb-1 uppercase tracking-wider">Urgent</p>
+                  {chats.filter(c => sidebarCfg.urgentIds.includes(c.id)).map(conv => (
+                    <button key={conv.id} onClick={() => setActiveChat(conv.id)} className={`w-full flex items-center gap-2.5 px-2 py-2 rounded-md text-left transition-colors ${activeChat === conv.id ? "bg-[#3d3d42]" : "hover:bg-[#2d2d30]"}`}>
+                      {conv.isGroup ? <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-[11px] font-bold shrink-0" style={{ background: conv.color }}>{conv.initials}</div> : <DiligentAgentIcon size={36} />}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[13px] text-white font-semibold truncate">{conv.isGroup ? conv.name : agentDisplayName(conv.id)}</span>
+                          <span className="text-[10px] text-[#F85149] shrink-0 font-medium">{conv.previewTime}</span>
+                        </div>
+                        <p className="text-[11px] text-[#C9D1D9] truncate mt-0.5 font-medium">{conv.preview}</p>
                       </div>
-                      <p className="text-[11px] text-[#C9D1D9] truncate mt-0.5 font-medium">{conv.preview}</p>
-                    </div>
-                    <div className="w-2 h-2 rounded-full bg-[#6264A7] shrink-0" />
-                  </button>
-                ))}
-              </div>
+                      <div className="w-2 h-2 rounded-full bg-[#6264A7] shrink-0" />
+                    </button>
+                  ))}
+                </div>
+              )}
 
-              {/* Team (fake read chats) */}
+              {/* Team */}
               <div className="px-3 py-1 mt-1">
                 <p className="text-[11px] text-[#8B8B8B] font-semibold px-1 mb-1">Team</p>
+                {/* Agent chat mixed in for scenarios 2 & 3 */}
+                {sidebarCfg.teamAgentId && (() => {
+                  const conv = chats.find(c => c.id === sidebarCfg.teamAgentId)!;
+                  return (
+                    <button key={conv.id} onClick={() => setActiveChat(conv.id)} className={`w-full flex items-center gap-2.5 px-2 py-2 rounded-md text-left transition-colors ${activeChat === conv.id ? "bg-[#3d3d42]" : "hover:bg-[#2d2d30]"}`}>
+                      <DiligentAgentIcon size={36} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[13px] text-white font-medium truncate">{agentDisplayName(conv.id)}</span>
+                          <span className="text-[10px] text-[#8B8B8B] shrink-0">{conv.previewTime}</span>
+                        </div>
+                        <p className="text-[11px] text-[#8B8B8B] truncate mt-0.5">{conv.preview}</p>
+                      </div>
+                      {activeChat === conv.id && <div className="w-2 h-2 rounded-full bg-[#6264A7] shrink-0" />}
+                    </button>
+                  );
+                })()}
                 {sidebarCfg.fakeTeam.map(fc => (
                   <div key={fc.name} className="w-full flex items-center gap-2.5 px-2 py-2 rounded-md text-left">
                     <Avatar src={fc.avatar} name={fc.name} size={36} className="opacity-70" />
