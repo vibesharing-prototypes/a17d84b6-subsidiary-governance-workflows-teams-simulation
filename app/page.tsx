@@ -625,6 +625,10 @@ function TeamsContent() {
                 <span className={`text-[9px] ${item.active ? "text-white" : "text-[#A8A8A8]"}`}>{item.label}</span>
               </button>
             ))}
+            <button className="w-12 h-12 rounded-lg flex flex-col items-center justify-center gap-0.5 bg-[#3d3d42] hover:bg-[#4a4a50] transition-colors">
+              <DiligentAgentIcon size={22} />
+              <span className="text-[9px] text-white font-medium leading-tight text-center" style={{ fontSize: "8px" }}>Diligent</span>
+            </button>
             <div className="flex-1" />
             <button className="w-12 h-12 rounded-lg flex flex-col items-center justify-center gap-0.5 hover:bg-[#3d3d42] transition-colors">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8A8A8" strokeWidth="1.5"><circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" /></svg>
