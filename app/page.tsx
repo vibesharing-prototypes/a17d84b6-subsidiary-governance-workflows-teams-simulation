@@ -80,7 +80,8 @@ const FAKE_TEAM_CHATS: FakeChat[] = [
 ];
 
 const SIDEBAR_PER_PERSPECTIVE: Record<string, SidebarConfig> = {
-  "gov-agent": { urgentIds: ["gov-agent"], fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
+  "gov-agent":         { urgentIds: ["gov-agent"], fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
+  "meeting-materials": { urgentIds: ["meeting-materials"], fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
 };
 
 /* ================================================================== */
@@ -158,6 +159,91 @@ const CHATS: Chat[] = [
     ],
   },
 
+  /* ---- Meeting Materials — Acme Holdings Europe Ltd. Q2 Board Meeting ---- */
+  {
+    id: "meeting-materials",
+    name: "Diligent Governance Agent",
+    initials: "GA",
+    color: "#0078D4",
+    section: "favorites",
+    preview: "Q2 board meeting — materials due in 7 days...",
+    previewTime: "9:45 AM",
+    messages: [],
+    steps: [
+      {
+        prompt: "Review & approve agenda",
+        userMsg: { from: "user", text: "Yes, show me the pre-built agenda.", time: "9:47 AM" },
+        botMsgs: [
+          { from: "bot", text: "Here's the agenda I've drafted based on your last meeting minutes and current entity obligations:", time: "9:47 AM", card: {
+            title: "Draft Agenda — Q2 Board Meeting",
+            fields: [
+              { label: "Item 1", value: "Approval of Q1 minutes (5 min)" },
+              { label: "Item 2", value: "Director appointment ratification — Dr. Elena Vasquez (10 min)" },
+              { label: "Item 3", value: "Q1 financial review — CFO presentation (20 min)" },
+              { label: "Item 4", value: "GDPR annual compliance report (15 min)" },
+              { label: "Item 5", value: "Any other business (10 min)" },
+            ],
+            bullets: [
+              "Item 2 was auto-added — links to the board resolution approved on Mar 23, 2026",
+              "Item 4 is required annually under Article 5 of GDPR — deadline is May 25, 2026",
+            ],
+            buttons: [
+              { label: "Approve agenda & compile board pack", style: "primary" },
+              { label: "Edit agenda" },
+            ],
+          }},
+        ],
+      },
+      {
+        prompt: "Approve agenda & compile board pack",
+        userMsg: { from: "user", text: "Agenda looks good — compile the board pack.", time: "9:49 AM" },
+        botMsgs: [
+          { from: "bot", text: "Pulling documents from Diligent Entities, the finance system, and previous meeting records...", time: "9:49 AM", thinking: true },
+          { from: "bot", text: "", time: "9:51 AM", card: {
+            title: "Board Pack Compiled — Acme Holdings Europe Ltd.",
+            statusRows: [
+              { icon: "check", text: "Q1 board minutes — retrieved from Diligent", color: "#3FB950" },
+              { icon: "check", text: "Director appointment resolution (Dr. Vasquez) — auto-linked", color: "#3FB950" },
+              { icon: "check", text: "Q1 financial statements — pulled from finance system", color: "#3FB950" },
+              { icon: "check", text: "GDPR annual compliance report — attached", color: "#3FB950" },
+              { icon: "check", text: "Meeting notice & dial-in details — generated", color: "#3FB950" },
+            ],
+            file: { name: "Acme_Holdings_Europe_Q2_Board_Pack_May2026.pdf", size: "3.4 MB" },
+            bullets: [
+              "Board pack includes all 5 agenda items with supporting documents",
+              "AI-generated executive summaries added to each section for faster review",
+            ],
+            buttons: [
+              { label: "Send to board members for review", style: "primary" },
+              { label: "Preview board pack" },
+            ],
+          }},
+        ],
+      },
+      {
+        prompt: "Send to board members for review",
+        userMsg: { from: "user", text: "Send to all board members for review.", time: "9:52 AM" },
+        botMsgs: [
+          { from: "bot", text: "", time: "9:52 AM", card: {
+            title: "Board Pack Distributed via Diligent Boards",
+            statusRows: [
+              { icon: "check", text: "Dr. Elena Vasquez — notified (pending first access)", color: "#3FB950" },
+              { icon: "check", text: "James Hargreaves (Chair) — notified", color: "#3FB950" },
+              { icon: "check", text: "Sophia Reinholt (Audit Committee) — notified", color: "#3FB950" },
+              { icon: "clock", text: "Richard Blake — departing director, view-only access granted", color: "#8B8B8B" },
+            ],
+            bullets: [
+              "Read receipts enabled — you'll be notified when each director opens the pack",
+              "Automated reminder scheduled 48 hours before the meeting (May 13, 2026)",
+              "All annotations and comments will be captured in the meeting audit trail",
+            ],
+          }},
+          { from: "bot", text: "Board pack sent. I'll notify you when all members have confirmed receipt. If any director raises a query or requests a document change, I'll route it directly to you.", time: "9:52 AM" },
+        ],
+      },
+    ],
+  },
+
 ];
 
 /* ================================================================== */
@@ -201,12 +287,39 @@ function DiligentAgentIcon({ size = 32, className = "" }: { size?: number; class
 }
 
 const PERSPECTIVES = [
-  { chatId: "gov-agent", step: 1, name: "Marcus Chen", role: "Corporate Secretary", avatar: AVATARS["marcus-chen"], initials: "MC", color: "#0078D4" },
+  { chatId: "gov-agent",         step: 1, name: "Marcus Chen", role: "Director Replacement",  avatar: AVATARS["marcus-chen"], initials: "MC", color: "#0078D4" },
+  { chatId: "meeting-materials", step: 2, name: "Marcus Chen", role: "Meeting Materials",      avatar: AVATARS["marcus-chen"], initials: "MC", color: "#0078D4" },
 ];
 
 /* ================================================================== */
 /*  Page                                                               */
 /* ================================================================== */
+
+const MEETING_INTRO_CARD: Msg = {
+  from: "bot", text: "Hi Marcus — I've spotted an upcoming board meeting that needs materials prepared.", time: "9:45 AM", card: {
+    title: "Upcoming Board Meeting — Action Required",
+    fields: [
+      { label: "Entity", value: "Acme Holdings Europe Ltd." },
+      { label: "Meeting", value: "Q2 Board Meeting" },
+      { label: "Date", value: "May 15, 2026 (53 days away)" },
+      { label: "Materials deadline", value: "May 8, 2026 (7 days to compile)", color: "#F0883E" },
+    ],
+    statusRows: [
+      { icon: "pending", text: "Board pack not yet started", color: "#F0883E" },
+      { icon: "clock", text: "4 agenda items auto-detected from entity obligations", color: "#8B8B8B" },
+    ],
+  },
+};
+
+const MEETING_INTRO_QUESTION: Msg = {
+  from: "bot", text: "I've pre-built an agenda based on your last meeting minutes and current subsidiary obligations — including the Dr. Vasquez director ratification. Would you like to review it before I start compiling the board pack?", time: "9:46 AM", card: {
+    buttons: [
+      { label: "Review & approve agenda", style: "primary" },
+      { label: "Build from scratch" },
+      { label: "Remind me tomorrow" },
+    ],
+  },
+};
 
 const GOV_AGENT_INTRO_CARD: Msg = {
   from: "bot", text: "Hi Marcus — I've flagged an upcoming governance action that requires your attention.", time: "9:15 AM", card: {
@@ -269,6 +382,23 @@ function TeamsContent() {
     }, 2200);
   }, [activeChat, scroll]);
 
+  // Meeting Materials intro: upcoming meeting notification, then agenda question
+  const meetingIntroRan = useRef(false);
+  useEffect(() => {
+    if (activeChat !== "meeting-materials" || meetingIntroRan.current) return;
+    meetingIntroRan.current = true;
+
+    setTimeout(() => {
+      setChats(prev => prev.map(c => c.id !== "meeting-materials" ? c : { ...c, messages: [...c.messages, MEETING_INTRO_CARD] }));
+      scroll();
+    }, 600);
+
+    setTimeout(() => {
+      setChats(prev => prev.map(c => c.id !== "meeting-materials" ? c : { ...c, messages: [...c.messages, MEETING_INTRO_QUESTION] }));
+      scroll();
+    }, 2200);
+  }, [activeChat, scroll]);
+
   const handleSend = () => {
     if (!currentStep || sending) return;
     setSending(true);
@@ -305,7 +435,7 @@ function TeamsContent() {
             <span className="px-3 py-1 rounded-md bg-[#6264A7] text-white text-[11px] font-semibold">Teams</span>
           </div>
           <div className="flex-1 h-px bg-[#DDD]" />
-          <p className="text-[10px] text-[#AAA] shrink-0">Subsidiary Governance — Director Replacement Workflow</p>
+          <p className="text-[10px] text-[#AAA] shrink-0">Subsidiary Governance Workflows — select a scenario</p>
         </div>
         <div className="flex items-center gap-2 overflow-x-auto pb-1">
           {PERSPECTIVES.map(p => {
