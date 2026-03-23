@@ -621,9 +621,13 @@ function TeamsContent() {
               { label: "Calendar", d: "M19 4H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zM16 2v4M8 2v4M3 10h18", active: false },
               { label: "OneDrive", d: "M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z", active: false },
             ].map(item => (
-              <button key={item.label} className={`w-12 h-12 rounded-lg flex flex-col items-center justify-center gap-0.5 transition-colors ${item.active ? "bg-[#3d3d42]" : "hover:bg-[#3d3d42]"}`}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={item.active ? "#fff" : "#A8A8A8"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={item.d} /></svg>
-                <span className={`text-[9px] ${item.active ? "text-white" : "text-[#A8A8A8]"}`}>{item.label}</span>
+              <button
+                key={item.label}
+                onClick={item.label === "Chat" ? () => setDiligentPanelOpen(false) : undefined}
+                className={`w-12 h-12 rounded-lg flex flex-col items-center justify-center gap-0.5 transition-colors ${item.active && !diligentPanelOpen ? "bg-[#3d3d42]" : "hover:bg-[#3d3d42]"}`}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={(item.active && !diligentPanelOpen) ? "#fff" : "#A8A8A8"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={item.d} /></svg>
+                <span className={`text-[9px] ${item.active && !diligentPanelOpen ? "text-white" : "text-[#A8A8A8]"}`}>{item.label}</span>
               </button>
             ))}
             <button
