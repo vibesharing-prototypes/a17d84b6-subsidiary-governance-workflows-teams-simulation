@@ -67,6 +67,15 @@ interface SidebarConfig {
   fakeTeam: FakeChat[];
 }
 
+/* ================================================================== */
+/*  Agent name resolver                                               */
+/* ================================================================== */
+
+function agentDisplayName(chatId: string): string {
+  if (chatId === "gov-agent") return "Diligent Governance Agent";
+  return "Diligent Risk Agent";
+}
+
 const FAKE_TEAM_CHATS: FakeChat[] = [
   { name: "Tom Henderson", avatar: "https://randomuser.me/api/portraits/med/men/32.jpg", preview: "Sure, I'll send the updated deck by EOD", time: "9:41 AM" },
   { name: "Priya Sharma", avatar: "https://randomuser.me/api/portraits/med/women/26.jpg", preview: "Can you review the contract redlines?", time: "Yesterday" },
@@ -87,6 +96,7 @@ const SIDEBAR_PER_PERSPECTIVE: Record<string, SidebarConfig> = {
   "gc-draft":      { urgentIds: ["gc-draft"], fakeTeam: FAKE_TEAM_CHATS },
   "draft-review":  { urgentIds: ["draft-review"], fakeTeam: FAKE_TEAM_CHATS.slice(1, 6) },
   "certification": { urgentIds: ["certification"], fakeTeam: FAKE_TEAM_CHATS.slice(2, 7) },
+  "gov-agent":     { urgentIds: ["gov-agent"], fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
 };
 
 /* ================================================================== */
@@ -376,6 +386,76 @@ const CHATS: Chat[] = [
     ],
   },
 
+  /* ---- 9. Governance Agent — Subsidiary Director Term Expiry ---- */
+  {
+    id: "gov-agent",
+    name: "Diligent Governance Agent",
+    initials: "GA",
+    color: "#0078D4",
+    section: "favorites",
+    preview: "Action required: board member term expiring...",
+    previewTime: "9:15 AM",
+    messages: [],
+    steps: [
+      {
+        prompt: "Yes, I already have someone in mind",
+        userMsg: { from: "user", text: "Yes, I already have someone in mind for the replacement.", time: "9:18 AM" },
+        botMsgs: [
+          { from: "bot", text: "Perfect. Could you share the nominee's full name and current role? I'll cross-check their qualifications, flag any potential conflicts of interest, and verify they meet the independence requirements for Acme Holdings Europe Ltd.", time: "9:18 AM", card: {
+            buttons: [
+              { label: "Enter nominee details", style: "primary" },
+              { label: "Not ready yet" },
+            ],
+          }},
+        ],
+      },
+      {
+        prompt: "Enter nominee details",
+        userMsg: { from: "user", text: "The nominee is Dr. Elena Vasquez — she's currently an independent board member at two other European subsidiaries and has 15 years of financial services experience.", time: "9:20 AM" },
+        botMsgs: [
+          { from: "bot", text: "Running qualification check for Dr. Elena Vasquez...", time: "9:20 AM", thinking: true },
+          { from: "bot", text: "", time: "9:21 AM", card: {
+            title: "Nominee Qualification Check — Dr. Elena Vasquez",
+            statusRows: [
+              { icon: "check", text: "Independence criteria — passed", color: "#3FB950" },
+              { icon: "check", text: "No conflicts of interest detected", color: "#3FB950" },
+              { icon: "check", text: "Meets EU subsidiary director requirements", color: "#3FB950" },
+              { icon: "pending", text: "Board skills matrix gap analysis — pending your confirmation", color: "#F0883E" },
+            ],
+            bullets: [
+              "Dr. Vasquez's financial services background directly addresses the current gap in the Acme Holdings Europe Ltd. board skills matrix",
+              "She currently serves on 2 other boards — within the recommended maximum of 4 for non-executives",
+              "I'll prepare the resolution and notify the subsidiary registrar once you confirm",
+            ],
+            buttons: [
+              { label: "Confirm nomination & prepare resolution", style: "primary" },
+              { label: "Request more details" },
+            ],
+          }},
+        ],
+      },
+      {
+        prompt: "Confirm nomination & prepare resolution",
+        userMsg: { from: "user", text: "Confirmed — please prepare the board resolution and start the onboarding process.", time: "9:23 AM" },
+        botMsgs: [
+          { from: "bot", text: "", time: "9:23 AM", card: {
+            title: "Resolution Prepared & Workflow Initiated",
+            statusRows: [
+              { icon: "check", text: "Board resolution drafted — ready for signature", color: "#3FB950" },
+              { icon: "check", text: "Subsidiary registrar notified (Companies House UK)", color: "#3FB950" },
+              { icon: "check", text: "Onboarding pack sent to Dr. Elena Vasquez", color: "#3FB950" },
+              { icon: "clock", text: "D&O insurance update — in progress", color: "#8B8B8B" },
+              { icon: "clock", text: "Director register update — scheduled for filing", color: "#8B8B8B" },
+            ],
+            file: { name: "Board_Resolution_Acme_Holdings_Europe_Director_Appointment.pdf", size: "84 KB" },
+            bullets: ["All entities under Acme's subsidiary tree have been scanned — no other director terms expire in the next 90 days."],
+          }},
+          { from: "bot", text: "The resolution is ready for execution in Diligent Entities. I'll track the filing and notify you once Companies House confirms the appointment.", time: "9:23 AM" },
+        ],
+      },
+    ],
+  },
+
   /* ---- 8. Certification & EDGAR Filing (Group — GC, CEO, CFO) ---- */
   {
     id: "certification",
@@ -439,6 +519,7 @@ const AVATARS: Record<string, string> = {
   "patricia-wells": "https://i.pravatar.cc/150?u=patricia-wells",
   "michael-okafor": "https://i.pravatar.cc/150?u=michael-okafor",
   "robert-tanaka": "https://randomuser.me/api/portraits/med/men/52.jpg",
+  "marcus-chen": "https://randomuser.me/api/portraits/med/men/41.jpg",
 };
 
 const PERSON_AVATAR: Record<string, string> = {
@@ -448,6 +529,7 @@ const PERSON_AVATAR: Record<string, string> = {
   "Patricia Wells": AVATARS["patricia-wells"],
   "Michael Okafor": AVATARS["michael-okafor"],
   "Robert Tanaka": AVATARS["robert-tanaka"],
+  "Marcus Chen": AVATARS["marcus-chen"],
   "Sarah Mitchell": AVATARS["sarah-mitchell"],
   "Diana Reyes": AVATARS["diana-reyes"],
   "Chief Risk Officer": AVATARS["chief-risk-officer"],
@@ -491,6 +573,7 @@ const PERSPECTIVES = [
   { chatId: "ceo",           step: 6, name: "Jennifer Walsh",       role: "CEO",                            avatar: AVATARS["jennifer-walsh"],       initials: "JW", color: "#FFB900" },
   { chatId: "committee",     step: 7, name: "Disclosure Committee", role: "Board Committee Review",         avatar: undefined,                       initials: "DC", color: "#00CC6A" },
   { chatId: "certification", step: 8, name: "Sarah Mitchell",       role: "Certification & EDGAR Filing",   avatar: AVATARS["sarah-mitchell"],       initials: "SM", color: "#059669" },
+  { chatId: "gov-agent",    step: 9, name: "Marcus Chen",          role: "Corporate Secretary",            avatar: AVATARS["marcus-chen"],          initials: "MC", color: "#0078D4" },
 ];
 
 /* ================================================================== */
@@ -614,6 +697,32 @@ const COMMITTEE_SUMMARY: Msg = {
     ],
     bullets: ["EDGAR filing package is ready. Full audit trail preserved in Diligent Data Room."],
     buttons: [{ label: "Generate EDGAR Filing Package", style: "primary" as const }, { label: "View in Data Room", href: `${WEB_BASE}/superhero/data-room` }],
+  },
+};
+
+const GOV_AGENT_INTRO_CARD: Msg = {
+  from: "bot", text: "Hi Marcus — I've flagged an upcoming governance action that requires your attention.", time: "9:15 AM", card: {
+    title: "Director Term Expiry — Action Required",
+    fields: [
+      { label: "Entity", value: "Acme Holdings Europe Ltd." },
+      { label: "Director", value: "Richard Blake, Non-Executive Director" },
+      { label: "Term expires", value: "June 30, 2026 (99 days)", color: "#F0883E" },
+      { label: "Minimum notice required", value: "60 days before AGM" },
+    ],
+    statusRows: [
+      { icon: "pending", text: "Replacement appointment needed before May 1, 2026", color: "#F0883E" },
+      { icon: "clock", text: "Board skills matrix: finance & audit gap if not replaced", color: "#8B8B8B" },
+    ],
+  },
+};
+
+const GOV_AGENT_INTRO_QUESTION: Msg = {
+  from: "bot", text: "Do you already know who you'd like to nominate as Richard Blake's replacement on the Acme Holdings Europe Ltd. board?", time: "9:16 AM", card: {
+    buttons: [
+      { label: "Yes, I have someone in mind", style: "primary" },
+      { label: "No, send me recommendations" },
+      { label: "Not yet decided" },
+    ],
   },
 };
 
@@ -902,6 +1011,23 @@ function TeamsContent() {
     }, 5200);
   }, [activeChat, scroll]);
 
+  // Gov Agent intro: term expiry notification, then replacement question
+  const govIntroRan = useRef(false);
+  useEffect(() => {
+    if (activeChat !== "gov-agent" || govIntroRan.current) return;
+    govIntroRan.current = true;
+
+    setTimeout(() => {
+      setChats(prev => prev.map(c => c.id !== "gov-agent" ? c : { ...c, messages: [...c.messages, GOV_AGENT_INTRO_CARD] }));
+      scroll();
+    }, 600);
+
+    setTimeout(() => {
+      setChats(prev => prev.map(c => c.id !== "gov-agent" ? c : { ...c, messages: [...c.messages, GOV_AGENT_INTRO_QUESTION] }));
+      scroll();
+    }, 2200);
+  }, [activeChat, scroll]);
+
   const handleSend = () => {
     if (activeChat === "gc" && gcIntroPhase < 3) return;
     if (!currentStep || sending) return;
@@ -1041,7 +1167,7 @@ function TeamsContent() {
                     {conv.isGroup ? <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-[11px] font-bold shrink-0" style={{ background: conv.color }}>{conv.initials}</div> : <DiligentAgentIcon size={36} />}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <span className="text-[13px] text-white font-semibold truncate">{conv.id === "gc" || conv.id === "diana" || conv.id === "cro" || conv.id === "ceo" ? "Diligent Risk Agent" : conv.name}</span>
+                        <span className="text-[13px] text-white font-semibold truncate">{conv.isGroup ? conv.name : agentDisplayName(conv.id)}</span>
                         <span className="text-[10px] text-[#F85149] shrink-0 font-medium">{conv.previewTime}</span>
                       </div>
                       <p className="text-[11px] text-[#C9D1D9] truncate mt-0.5 font-medium">{conv.preview}</p>
@@ -1081,7 +1207,7 @@ function TeamsContent() {
                   <DiligentAgentIcon size={32} />
                 )}
                 <div>
-                  <span className="text-[14px] text-white font-semibold">{chat.id === "gc" ? "Diligent Risk Agent" : chat.id === "diana" ? "Diligent Risk Agent" : chat.id === "cro" ? "Diligent Risk Agent" : chat.id === "ceo" ? "Diligent Risk Agent" : chat.name}</span>
+                  <span className="text-[14px] text-white font-semibold">{chat.isGroup ? chat.name : agentDisplayName(chat.id)}</span>
                   {chat.isGroup && <p className="text-[10px] text-[#8B8B8B] -mt-0.5">{chat.members}</p>}
                 </div>
               </div>
@@ -1131,7 +1257,7 @@ function TeamsContent() {
                       <div className={`max-w-[70%] ${isUser ? "" : ""}`}>
                         {/* Sender + time */}
                         <div className={`flex items-center gap-2 mb-0.5 ${isUser ? "justify-end" : ""}`}>
-                          {!isUser && <span className="text-[12px] font-semibold text-white">{isBot ? "Diligent Risk Agent" : personName}</span>}
+                          {!isUser && <span className="text-[12px] font-semibold text-white">{isBot ? agentDisplayName(activeChat) : personName}</span>}
                           <span className="text-[10px] text-[#8B8B8B]">{msg.time}</span>
                         </div>
                         {/* Bubble */}
