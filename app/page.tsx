@@ -83,7 +83,7 @@ const FAKE_TEAM_CHATS: FakeChat[] = [
 const SIDEBAR_PER_PERSPECTIVE: Record<string, SidebarConfig> = {
   "gov-agent":         { urgentIds: ["gov-agent"],                           fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
   "meeting-materials": { urgentIds: [], teamAgentId: "meeting-materials",    fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
-  "q3-portfolio":      { urgentIds: [], teamAgentId: "q3-portfolio",         fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
+  "q3-portfolio":      { urgentIds: ["q3-channel"], teamAgentId: "q3-portfolio", fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
 };
 
 /* ================================================================== */
@@ -156,6 +156,44 @@ const CHATS: Chat[] = [
             bullets: ["All entities under Acme's subsidiary tree have been scanned — no other director terms expire in the next 90 days."],
           }},
           { from: "bot", text: "The resolution is ready for execution in Diligent Entities. I'll track the filing and notify you once Companies House confirms the appointment.", time: "9:23 AM" },
+        ],
+      },
+    ],
+  },
+
+  /* ---- Q3 Planning Channel — Group ---- */
+  {
+    id: "q3-channel",
+    name: "Q3 Planning",
+    initials: "Q3",
+    color: "#0078D4",
+    isGroup: true,
+    members: "Marcus Chen, Lena Bauer, Claire Dupont, Diego Ruiz, Giulia Marino",
+    section: "favorites",
+    preview: "Diligent: I've mapped every Q3 obligation...",
+    previewTime: "10:08 AM",
+    messages: [],
+    steps: [
+      {
+        prompt: "Confirm all task assignments",
+        userMsg: { from: "Marcus Chen", text: "Looks good everyone — let's confirm all assignments and get moving.", time: "10:14 AM" },
+        botMsgs: [
+          { from: "bot", text: "", time: "10:14 AM", card: {
+            title: "All Q3 Task Assignments Confirmed",
+            statusRows: [
+              { icon: "check", text: "Acme Holdings Europe Ltd. — Marcus Chen notified", color: "#3FB950" },
+              { icon: "check", text: "Acme GmbH — Lena Bauer notified", color: "#3FB950" },
+              { icon: "check", text: "Acme SAS — Claire Dupont notified", color: "#3FB950" },
+              { icon: "check", text: "Acme Iberia S.L. — Diego Ruiz notified", color: "#3FB950" },
+              { icon: "check", text: "Acme Italia S.r.l. — Giulia Marino notified", color: "#3FB950" },
+            ],
+            bullets: [
+              "Individual task threads created for each entity in Diligent Entities",
+              "Deadline reminders set at 14 days and 3 days before each due date",
+              "I'll post weekly status updates here every Monday morning",
+            ],
+          }},
+          { from: "bot", text: "All set. I'll monitor progress and flag anything that falls behind. You can ask me for a status update at any time.", time: "10:14 AM" },
         ],
       },
     ],
@@ -339,11 +377,19 @@ const CHATS: Chat[] = [
 /* ================================================================== */
 
 const AVATARS: Record<string, string> = {
-  "marcus-chen": "https://randomuser.me/api/portraits/med/men/41.jpg",
+  "marcus-chen":  "https://randomuser.me/api/portraits/med/men/41.jpg",
+  "lena-bauer":   "https://randomuser.me/api/portraits/med/women/34.jpg",
+  "claire-dupont":"https://randomuser.me/api/portraits/med/women/22.jpg",
+  "diego-ruiz":   "https://randomuser.me/api/portraits/med/men/61.jpg",
+  "giulia-marino":"https://randomuser.me/api/portraits/med/women/45.jpg",
 };
 
 const PERSON_AVATAR: Record<string, string> = {
-  "Marcus Chen": AVATARS["marcus-chen"],
+  "Marcus Chen":   AVATARS["marcus-chen"],
+  "Lena Bauer":    AVATARS["lena-bauer"],
+  "Claire Dupont": AVATARS["claire-dupont"],
+  "Diego Ruiz":    AVATARS["diego-ruiz"],
+  "Giulia Marino": AVATARS["giulia-marino"],
 };
 
 function getInitials(name: string) { return name.split(" ").map(n => n[0]).join(""); }
@@ -383,6 +429,32 @@ const PERSPECTIVES = [
 /* ================================================================== */
 /*  Page                                                               */
 /* ================================================================== */
+
+const Q3_CHANNEL_MEMBERS_MSGS: Msg[] = [
+  { from: "Lena Bauer",    text: "Thanks Marcus — I'll pull together the GmbH requirements. Quick question: is the supervisory board meeting confirmed for August?", time: "10:06 AM" },
+  { from: "Claire Dupont", text: "Bonjour tout le monde 👋 On it for Acme SAS. The statutory auditor deadline is August 15, so I'll need Q1 financials from the CFO by end of July.", time: "10:07 AM" },
+];
+
+const Q3_CHANNEL_BOT_INTRO: Msg = {
+  from: "bot", text: "Hi everyone — I've completed a Q3 governance scan across all five entities. Here's a structured overview to help coordinate:", time: "10:08 AM", card: {
+    title: "Q3 Governance Overview — 5 Entities",
+    fields: [
+      { label: "🇬🇧 Acme Holdings Europe Ltd.", value: "AGM filing Jul 31 · Confirmation statement · Director register update" },
+      { label: "🇩🇪 Acme GmbH",                value: "Supervisory board meeting (Aug TBC) · Annual financial statements Sep 1" },
+      { label: "🇫🇷 Acme SAS",                 value: "Q3 board meeting · Statutory auditor report Aug 15 · Beneficial ownership update" },
+      { label: "🇪🇸 Acme Iberia S.L.",         value: "Director re-election (2 seats) · Annual accounts Sep 30" },
+      { label: "🇮🇹 Acme Italia S.r.l.",       value: "Extraordinary general meeting · Quota transfer docs · Notary filing Aug 20" },
+    ],
+    bullets: [
+      "I've created individual task threads for each entity in Diligent Entities",
+      "Lena — supervisory board meeting can be confirmed for Aug 14; I'll send the notice",
+    ],
+    buttons: [
+      { label: "Confirm all task assignments", style: "primary" },
+      { label: "Adjust a deadline" },
+    ],
+  },
+};
 
 const Q3_INTRO_CARD: Msg = {
   from: "bot", text: "Hi Marcus — I've completed a Q3 compliance scan across your full subsidiary portfolio.", time: "10:05 AM", card: {
@@ -497,6 +569,32 @@ function TeamsContent() {
       setChats(prev => prev.map(c => c.id !== "gov-agent" ? c : { ...c, messages: [...c.messages, GOV_AGENT_INTRO_QUESTION] }));
       scroll();
     }, 2200);
+  }, [activeChat, scroll]);
+
+  // Q3 Channel intro: Marcus kicks off, team replies, agent chimes in
+  const q3ChannelIntroRan = useRef(false);
+  useEffect(() => {
+    if (activeChat !== "q3-channel" || q3ChannelIntroRan.current) return;
+    q3ChannelIntroRan.current = true;
+
+    setTimeout(() => {
+      setChats(prev => prev.map(c => c.id !== "q3-channel" ? c : { ...c, messages: [...c.messages,
+        { from: "Marcus Chen", text: "Hi team — time to kick off Q3 planning 👋 We have governance obligations across all five subsidiaries this quarter. I'll be coordinating with each of you on your respective jurisdictions. Diligent Governance Agent will be tracking everything and helping with task assignments.", time: "10:05 AM" },
+      ]}));
+      scroll();
+    }, 600);
+
+    Q3_CHANNEL_MEMBERS_MSGS.forEach((msg, i) => {
+      setTimeout(() => {
+        setChats(prev => prev.map(c => c.id !== "q3-channel" ? c : { ...c, messages: [...c.messages, msg] }));
+        scroll();
+      }, 1800 + i * 1000);
+    });
+
+    setTimeout(() => {
+      setChats(prev => prev.map(c => c.id !== "q3-channel" ? c : { ...c, messages: [...c.messages, Q3_CHANNEL_BOT_INTRO] }));
+      scroll();
+    }, 1800 + Q3_CHANNEL_MEMBERS_MSGS.length * 1000 + 800);
   }, [activeChat, scroll]);
 
   // Q3 Portfolio intro: scan results card, then question
