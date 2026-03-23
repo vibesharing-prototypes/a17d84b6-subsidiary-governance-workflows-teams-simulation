@@ -469,6 +469,7 @@ function TeamsContent() {
   const [chats, setChats] = useState<Chat[]>(CHATS);
   const [stepIdx, setStepIdx] = useState<Record<string, number>>(() => Object.fromEntries(CHATS.map(c => [c.id, 0])));
   const [sending, setSending] = useState(false);
+  const [diligentPanelOpen, setDiligentPanelOpen] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   const chat = chats.find(c => c.id === activeChat)!;
@@ -625,9 +626,12 @@ function TeamsContent() {
                 <span className={`text-[9px] ${item.active ? "text-white" : "text-[#A8A8A8]"}`}>{item.label}</span>
               </button>
             ))}
-            <button className="w-12 h-12 rounded-lg flex flex-col items-center justify-center gap-0.5 bg-[#3d3d42] hover:bg-[#4a4a50] transition-colors">
+            <button
+              onClick={() => setDiligentPanelOpen(o => !o)}
+              className={`w-12 h-12 rounded-lg flex flex-col items-center justify-center gap-0.5 transition-colors ${diligentPanelOpen ? "bg-[#3d3d42]" : "hover:bg-[#3d3d42]"}`}
+            >
               <DiligentAgentIcon size={22} />
-              <span className="text-[9px] text-white font-medium leading-tight text-center" style={{ fontSize: "8px" }}>Diligent</span>
+              <span className={`leading-tight text-center ${diligentPanelOpen ? "text-white" : "text-[#A8A8A8]"}`} style={{ fontSize: "8px" }}>Diligent</span>
             </button>
             <div className="flex-1" />
             <button className="w-12 h-12 rounded-lg flex flex-col items-center justify-center gap-0.5 hover:bg-[#3d3d42] transition-colors">
@@ -639,6 +643,72 @@ function TeamsContent() {
               <span className="text-[9px] text-[#A8A8A8]">Apps</span>
             </button>
           </div>
+
+          {diligentPanelOpen ? (
+            /* ====== Diligent Agent Welcome Panel ====== */
+            <div className="flex-1 flex flex-col min-h-0 bg-[#1A1A1A]">
+              {/* Panel Header */}
+              <div className="h-[48px] bg-[#292828] flex items-center justify-between px-4 shrink-0 border-b border-[#3b3a39]">
+                <div className="flex items-center gap-2">
+                  <DiligentAgentIcon size={32} />
+                  <span className="text-[14px] text-white font-semibold">Diligent Governance Agent</span>
+                </div>
+                <button onClick={() => setDiligentPanelOpen(false)} className="w-7 h-7 flex items-center justify-center rounded hover:bg-[#3d3d42] transition-colors text-[#8B8B8B] hover:text-white">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                </button>
+              </div>
+              {/* Welcome messages */}
+              <div className="flex-1 overflow-y-auto px-6 py-4 min-h-0">
+                <div className="max-w-[820px] mx-auto">
+                  <div className="flex items-center gap-3 my-4">
+                    <div className="flex-1 h-px bg-[#333]" />
+                    <span className="text-[11px] text-[#8B8B8B]">Today</span>
+                    <div className="flex-1 h-px bg-[#333]" />
+                  </div>
+                  <div className="flex justify-start gap-2">
+                    <DiligentAgentIcon size={32} className="mt-0.5 shrink-0" />
+                    <div className="max-w-[70%]">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-[12px] font-semibold text-white">Diligent Governance Agent</span>
+                        <span className="text-[10px] text-[#8B8B8B]">Just now</span>
+                      </div>
+                      <div className="rounded-md px-3 py-2.5 bg-[#292828] space-y-2">
+                        <p className="text-[13px] text-white leading-relaxed">Hi Marcus! I&apos;m the <strong>Diligent Governance Agent</strong> — your AI assistant for subsidiary governance, board management, and entity compliance across your full portfolio.</p>
+                        <p className="text-[13px] text-white leading-relaxed">Start a conversation by asking me a question, or try one of these prompts to get started.</p>
+                        <div className="pt-1 space-y-1.5">
+                          {[
+                            "What governance actions are due this quarter?",
+                            "Help me draft a board resolution",
+                            "Which subsidiaries have upcoming filing deadlines?",
+                            "Who should I assign this compliance task to?",
+                            "Summarize the board pack for Acme Holdings Europe",
+                          ].map(prompt => (
+                            <div key={prompt} className="flex items-start gap-1.5">
+                              <span className="text-[#8B8B8B] text-[12px] mt-0.5 shrink-0">•</span>
+                              <p className="text-[13px] text-[#58A6FF] leading-relaxed hover:underline cursor-pointer">{prompt}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* Blank input */}
+              <div className="bg-[#292828] border-t border-[#3b3a39] px-4 py-2 shrink-0">
+                <div className="flex items-center gap-2 bg-[#3b3a39] rounded-md px-3 py-2">
+                  <span className="flex-1 text-[13px] text-[#8B8B8B]">Ask the Diligent Governance Agent...</span>
+                  <div className="flex items-center gap-1.5 shrink-0 text-[#555]">
+                    <button className="hover:text-[#8B8B8B] transition-colors"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" /></svg></button>
+                    <button className="hover:text-[#8B8B8B] transition-colors"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" strokeWidth="2.5" /><line x1="15" y1="9" x2="15.01" y2="9" strokeWidth="2.5" /></svg></button>
+                    <button className="w-8 h-8 rounded flex items-center justify-center text-[#555] cursor-default">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" /></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (<>
 
           {/* ====== Chat List ====== */}
           <div className="w-[300px] bg-[#1F1F1F] border-r border-[#3b3a39] flex flex-col shrink-0 min-h-0">
@@ -905,6 +975,7 @@ function TeamsContent() {
               </div>
             </div>
           </div>
+          </>)}
         </div>
       </div>
     </div>
