@@ -4,13 +4,6 @@ import { useState, useRef, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 /* ================================================================== */
-/*  External App URLs — update these when the other apps are deployed  */
-/* ================================================================== */
-
-const WEB_BASE = "https://vs-step-1-general-counsel-alerted-m.vercel.app";
-const SLACK_BASE = "https://vs-step-1-general-counsel-alerted-m.vercel.app/slack";
-
-/* ================================================================== */
 /*  Types                                                              */
 /* ================================================================== */
 
@@ -71,9 +64,8 @@ interface SidebarConfig {
 /*  Agent name resolver                                               */
 /* ================================================================== */
 
-function agentDisplayName(chatId: string): string {
-  if (chatId === "gov-agent") return "Diligent Governance Agent";
-  return "Diligent Risk Agent";
+function agentDisplayName(_chatId: string): string {
+  return "Diligent Governance Agent";
 }
 
 const FAKE_TEAM_CHATS: FakeChat[] = [
@@ -88,15 +80,7 @@ const FAKE_TEAM_CHATS: FakeChat[] = [
 ];
 
 const SIDEBAR_PER_PERSPECTIVE: Record<string, SidebarConfig> = {
-  gc:        { urgentIds: ["gc"], fakeTeam: FAKE_TEAM_CHATS },
-  diana:     { urgentIds: ["diana"], fakeTeam: FAKE_TEAM_CHATS.slice(2, 7) },
-  cro:       { urgentIds: ["cro"], fakeTeam: FAKE_TEAM_CHATS.slice(1, 6) },
-  ceo:       { urgentIds: ["ceo"], fakeTeam: FAKE_TEAM_CHATS.slice(3, 8) },
-  committee:     { urgentIds: ["committee"], fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
-  "gc-draft":      { urgentIds: ["gc-draft"], fakeTeam: FAKE_TEAM_CHATS },
-  "draft-review":  { urgentIds: ["draft-review"], fakeTeam: FAKE_TEAM_CHATS.slice(1, 6) },
-  "certification": { urgentIds: ["certification"], fakeTeam: FAKE_TEAM_CHATS.slice(2, 7) },
-  "gov-agent":     { urgentIds: ["gov-agent"], fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
+  "gov-agent": { urgentIds: ["gov-agent"], fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
 };
 
 /* ================================================================== */
@@ -104,289 +88,7 @@ const SIDEBAR_PER_PERSPECTIVE: Record<string, SidebarConfig> = {
 /* ================================================================== */
 
 const CHATS: Chat[] = [
-  /* ---- 1. GC Chat ---- */
-  {
-    id: "gc",
-    name: "Diligent Risk Agent",
-    initials: "DA",
-    color: "#6264A7",
-    section: "favorites",
-    preview: "3 emerging risks detected requiring...",
-    previewTime: "10:00 AM",
-    messages: [],
-    steps: [
-      {
-        prompt: "Notify all recommended risk owners",
-        userMsg: { from: "user", text: "Notify all recommended risk owners", time: "10:02 AM" },
-        botMsgs: [
-          { from: "bot", text: "", time: "10:02 AM", card: {
-            title: "Risk Owners Assigned",
-            statusRows: [
-              { icon: "check", text: "Diana Reyes notified — Taiwan Strait", color: "#3FB950" },
-              { icon: "check", text: "Marcus Webb notified — Vendor Breach", color: "#3FB950" },
-              { icon: "check", text: "James Park notified — EU DMA", color: "#3FB950" },
-            ],
-            bullets: ["All 3 owners have been sent investigation requests via Teams. They'll be interviewed by the AI Risk Manager and asked to respond within 48 hours.", "I'll notify you as each investigation is completed."],
-          }},
-        ],
-      },
-    ],
-  },
-
-  /* ---- 2. Diana Reyes (Risk Owner Interview) ---- */
-  {
-    id: "diana",
-    name: "Diligent Risk Agent",
-    initials: "DA",
-    color: "#6264A7",
-    section: "directs",
-    preview: "You've been assigned to investigate...",
-    previewTime: "10:03 AM",
-    messages: [],
-    steps: [
-      {
-        prompt: "We've been diversifying since Q3. Vietnam facility is...",
-        userMsg: { from: "user", text: "We've been diversifying since Q3 — the Vietnam facility was discussed in the October board materials. But realistically, TSMC still accounts for the bulk of our chip supply and there's no short-term alternative for the advanced nodes we need.", time: "10:15 AM" },
-        botMsgs: [
-          { from: "bot", text: "Thank you. That context about the Vietnam diversification timeline and TSMC dependency is helpful.\n\nThe AI assessment rated this as *CRITICAL* based on the 47% supplier concentration and $1.8B exposure. Do you agree with this severity level?", time: "10:15 AM", card: {
-            buttons: [{ label: "Agree with CRITICAL", style: "primary" }, { label: "Should Be Lower" }, { label: "Not a Risk" }],
-          }},
-        ],
-      },
-      {
-        prompt: "Agree with CRITICAL",
-        userMsg: { from: "user", text: "Agree with CRITICAL", time: "10:18 AM" },
-        botMsgs: [
-          { from: "bot", text: "Noted. The disclosure recommendation is:\n\n*\"Add specific language addressing semiconductor supply concentration in Taiwan region, including quantified exposure and diversification timeline.\"*\n\nDo you confirm this recommendation?", time: "10:18 AM", card: {
-            buttons: [{ label: "Confirm Recommendation", style: "primary" }, { label: "Request Changes" }],
-          }},
-        ],
-      },
-      {
-        prompt: "Confirm recommendation",
-        userMsg: { from: "user", text: "Confirm recommendation", time: "10:20 AM" },
-        botMsgs: [
-          { from: "bot", text: "", time: "10:20 AM", card: {
-            title: "Investigation Complete",
-            fields: [
-              { label: "Reference", value: "INV-TAIWAN-2026-001" },
-              { label: "Severity", value: "CRITICAL (confirmed)", color: "#F85149" },
-              { label: "Disclosure", value: "Recommended (confirmed)", color: "#3FB950" },
-            ],
-            bullets: [
-              "Your assessment has been sent to the Chief Risk Officer for review",
-              "The General Counsel will be notified once the CRO completes their analysis",
-              "You may be asked follow-up questions during the drafting process",
-            ],
-          }},
-          { from: "bot", text: "Thank you, Diana. You're all set. I'll reach out if anything else is needed.", time: "10:20 AM" },
-        ],
-      },
-    ],
-  },
-
-  /* ---- 3. CRO Chat ---- */
-  {
-    id: "cro",
-    name: "Diligent Risk Agent",
-    initials: "DA",
-    color: "#6264A7",
-    section: "directs",
-    preview: "Diana Reyes has completed her risk...",
-    previewTime: "10:22 AM",
-    messages: [],
-    steps: [
-      {
-        prompt: "Evaluate the response here",
-        userMsg: { from: "user", text: "Evaluate the response here", time: "10:24 AM" },
-        botMsgs: [
-          { from: "bot", text: "Here's what Diana provided:", time: "10:24 AM", card: {
-            title: "Risk Owner Investigation Review",
-            fields: [
-              { label: "Risk", value: "Taiwan Strait Geopolitical Tensions" },
-              { label: "Investigated by", value: "Diana Reyes, VP Supply Chain" },
-              { label: "Context from owner", value: "Vietnam diversification underway since Q3; TSMC still primary for advanced nodes. No short-term alternative." },
-              { label: "Severity assessment", value: "Agreed with CRITICAL", color: "#F85149" },
-              { label: "Disclosure recommendation", value: "Confirmed", color: "#3FB950" },
-            ],
-          }},
-          { from: "bot", text: "Now I need your assessment. What is the *likelihood of occurrence*?\n\nFor context: your peers with supply chain exposure in the Taiwan Strait estimate a *Moderate* likelihood. However, my analysis of 14 geopolitical risk models, recent military exercise patterns, and semiconductor supply chain data indicates it's more likely *Very High* — particularly given Acme's 47% concentration with no near-term alternative.", time: "10:24 AM", card: {
-            buttons: [{ label: "Very High (AI recommended)", style: "primary" }, { label: "High" }, { label: "Moderate (peer avg)" }, { label: "Low" }],
-          }},
-        ],
-      },
-      {
-        prompt: "Very High",
-        userMsg: { from: "user", text: "Very High", time: "10:26 AM" },
-        botMsgs: [
-          { from: "bot", text: "Noted — *Very High* likelihood, aligned with my recommendation.\n\nWhat about the *impact if it occurs*?\n\nMy assessment: *Severe*. At $1.8B revenue exposure across 3 business units with TSMC as the sole advanced-node supplier, a disruption would trigger production halts within 6–8 weeks. Peer companies with similar concentration have disclosed this as a material risk to shareholders.", time: "10:26 AM", card: {
-            buttons: [{ label: "Severe (AI recommended)", style: "primary" }, { label: "Major" }, { label: "Moderate" }, { label: "Minor" }],
-          }},
-        ],
-      },
-      {
-        prompt: "Severe",
-        userMsg: { from: "user", text: "Severe", time: "10:27 AM" },
-        botMsgs: [
-          { from: "bot", text: "Very High likelihood + Severe impact confirms this as a top-tier risk.\n\nDiana mentioned two controls: a *supplier diversification program* and *Samsung qualification in progress*. I've verified both — the Samsung qualification is on track for Q3 but won't reduce Taiwan concentration below 30% until 2027. I'd recommend noting these controls but flagging them as *insufficient for near-term mitigation*.", time: "10:27 AM", card: {
-            buttons: [{ label: "Use Diana's controls + AI note", style: "primary" }, { label: "Add my own" }],
-          }},
-        ],
-      },
-      {
-        prompt: "Use Diana's controls + AI note",
-        userMsg: { from: "user", text: "Use Diana's controls with your insufficiency note", time: "10:28 AM" },
-        botMsgs: [
-          { from: "bot", text: "Got it. One last question — any *additional context* for the 10-K draft? Key considerations, board-level messaging, or disclosure sensitivities?", time: "10:28 AM", card: {
-            buttons: [{ label: "No, submit assessment", style: "primary" }, { label: "Add context" }],
-          }},
-        ],
-      },
-      {
-        prompt: "No, submit assessment",
-        userMsg: { from: "user", text: "No additional context needed. Submit assessment.", time: "10:30 AM" },
-        botMsgs: [
-          { from: "bot", text: "", time: "10:30 AM", card: {
-            title: "CRO Assessment Submitted",
-            statusRows: [
-              { icon: "check", text: "Likelihood: Very High", color: "#F85149" },
-              { icon: "check", text: "Impact: Severe", color: "#F85149" },
-              { icon: "check", text: "Controls: Supplier diversification, Samsung qualification", color: "#58A6FF" },
-              { icon: "check", text: "Disclosure: Confirmed — proceeding to 10-K draft", color: "#3FB950" },
-            ],
-            bullets: [
-              "Your assessment has been sent to the General Counsel",
-              "The AI writer will use Diana's context, your assessment, and the risk analysis to draft disclosure language",
-            ],
-          }},
-          { from: "bot", text: "Assessment complete. Would you like to explore this risk further?", time: "10:30 AM", card: {
-            buttons: [
-              { label: "Open in Risk Essentials", style: "primary", href: `${WEB_BASE}/superhero/risk-discovery` },
-              { label: "Try Risk Impact Simulator", href: `${WEB_BASE}/superhero/risk-analysis` },
-            ],
-          }},
-        ],
-      },
-    ],
-  },
-
-  /* ---- 4. GC Draft Notification ---- */
-  {
-    id: "gc-draft",
-    name: "Diligent Risk Agent",
-    initials: "DA",
-    color: "#6264A7",
-    section: "favorites",
-    preview: "The CRO has completed his evaluation...",
-    previewTime: "2:30 PM",
-    messages: [],
-    steps: [
-      {
-        prompt: "Review the draft now",
-        userMsg: { from: "user", text: "Let me take a look at the draft.", time: "2:35 PM" },
-        botMsgs: [
-          { from: "bot", text: "Opening the disclosure writer now. You can edit the draft directly, use AI to rewrite sections, or compare against peer filings.\n\nOnce you're satisfied, click **Submit Draft** — I'll route it to the CRO, Diana, and Robert Tanaka (CFO) for a final review before it goes to the CEO.", time: "2:35 PM", card: {
-            buttons: [
-              { label: "Open Disclosure Writer", style: "primary", href: `${WEB_BASE}/superhero/writer?risk=risk-taiwan&owner=diana-reyes` },
-            ],
-          }},
-        ],
-      },
-    ],
-  },
-
-  /* ---- 6. CEO Chat ---- */
-  {
-    id: "ceo",
-    name: "Diligent Risk Agent",
-    initials: "DA",
-    color: "#6264A7",
-    section: "directs",
-    preview: "3 risks require your disclosure approval",
-    previewTime: "3:32 PM",
-    messages: [],
-    steps: [
-      {
-        prompt: "Approve all disclosures",
-        userMsg: { from: "user", text: "Approve all disclosures", time: "4:30 PM" },
-        botMsgs: [
-          { from: "bot", text: "✅ All 3 disclosures approved.\n\nBased on the risk categories involved, I'd recommend routing to these committees for final review:\n• Audit Committee (David Patel)\n• Risk Committee (Linda Nakamura)\n• Cybersecurity Committee (Patricia Wells)\n• Compliance Committee (Michael Okafor)\n• Independent Director (James Thornton)", time: "4:30 PM", card: {
-            buttons: [{ label: "Notify GC to Route to Committees", style: "primary" }, { label: "Skip Committee Review" }],
-          }},
-        ],
-      },
-      {
-        prompt: "Notify GC to route to committees",
-        userMsg: { from: "user", text: "Yes, notify Sarah to route to all committees", time: "4:32 PM" },
-        botMsgs: [
-          { from: "bot", text: "✅ The General Counsel has been notified to route materials to all 5 committee members. They'll receive review requests in the Disclosure Committee channel.\n\nYou're all set, Jennifer. I'll follow up if anything needs your attention.", time: "4:32 PM" },
-        ],
-      },
-    ],
-  },
-
-  /* ---- 7. Disclosure Committee (Group) ---- */
-  {
-    id: "committee",
-    name: "Disclosure Committee",
-    initials: "DC",
-    color: "#E3008C",
-    isGroup: true,
-    members: "Sarah Mitchell, David Patel, Linda Nakamura, James Thornton, Patricia Wells, Michael Okafor",
-    section: "favorites",
-    preview: "All 5 members have confirmed...",
-    previewTime: "5:25 PM",
-    messages: [],
-    steps: [
-      {
-        prompt: "Generate the filing package",
-        userMsg: { from: "user", text: "Generate the filing package", time: "5:32 PM" },
-        botMsgs: [
-          { from: "bot", text: "", time: "5:32 PM", card: {
-            title: "EDGAR Filing Package Generated",
-            statusRows: [
-              { icon: "check", text: "10-K Amendment (Risk Factors) — ready", color: "#3FB950" },
-              { icon: "check", text: "ERM Board Deck — final version locked", color: "#3FB950" },
-              { icon: "check", text: "Audit trail — 47 events, 12 participants", color: "#3FB950" },
-              { icon: "check", text: "AI verification certificate — attached", color: "#3FB950" },
-            ],
-            file: { name: "EDGAR_Filing_Package_2026-03-11.zip", size: "14.2 MB" },
-          }},
-          { from: "bot", text: "The filing package is ready in the Diligent Data Room. Sarah Mitchell and outside counsel have been notified.\n\nTotal time from risk detection to filing-ready: 7 hours 32 minutes across 12 participants.", time: "5:32 PM" },
-        ],
-      },
-    ],
-  },
-
-  /* ---- 5. Draft Review (Group — GC, CRO, Diana, CFO) ---- */
-  {
-    id: "draft-review",
-    name: "10-K Disclosure Draft Review",
-    initials: "DR",
-    color: "#6264A7",
-    isGroup: true,
-    members: "Sarah Mitchell, Chief Risk Officer, Diana Reyes, Robert Tanaka",
-    section: "favorites",
-    preview: "Sarah's first draft is ready for review...",
-    previewTime: "3:35 PM",
-    messages: [],
-    steps: [
-      {
-        prompt: "Looks good — send to CEO for final sign-off.",
-        userMsg: { from: "user", text: "I'm comfortable with this. Let's send to Jennifer Walsh for final sign-off.", time: "4:10 PM" },
-        botMsgs: [
-          { from: "bot", text: "Great — I've routed the draft to Jennifer Walsh (CEO) for final approval. She'll receive the 10-K Risk Factor Draft, supporting documentation, and the full audit trail.\n\nI'll notify this group when she responds.", time: "4:10 PM", card: {
-            statusRows: [
-              { icon: "check", text: "Draft sent to Jennifer Walsh (CEO)", color: "#3FB950" },
-              { icon: "pending", text: "Awaiting CEO approval", color: "#F0883E" },
-            ],
-          }},
-        ],
-      },
-    ],
-  },
-
-  /* ---- 9. Governance Agent — Subsidiary Director Term Expiry ---- */
+  /* ---- Governance Agent — Subsidiary Director Term Expiry ---- */
   {
     id: "gov-agent",
     name: "Diligent Governance Agent",
@@ -456,50 +158,6 @@ const CHATS: Chat[] = [
     ],
   },
 
-  /* ---- 8. Certification & EDGAR Filing (Group — GC, CEO, CFO) ---- */
-  {
-    id: "certification",
-    name: "10-K Certification & Filing",
-    initials: "CF",
-    color: "#059669",
-    isGroup: true,
-    members: "Sarah Mitchell, Jennifer Walsh, Robert Tanaka",
-    section: "favorites",
-    preview: "Committee review complete — certification needed...",
-    previewTime: "5:40 PM",
-    messages: [],
-    steps: [
-      {
-        prompt: "Continue — submit via EDGAR",
-        userMsg: { from: "user", text: "Continue — let's submit.", time: "6:05 PM" },
-        botMsgs: [
-          { from: "bot", text: "Submitting the 10-K filing package to EDGAR now.\n\nPackage includes:\n• Updated Item 1A Risk Factors (Taiwan Strait, Vendor Breach, EU DMA)\n• Officer certifications (CEO + CFO)\n• Full audit trail and committee sign-offs\n\nI'll confirm once the filing is accepted.", time: "6:05 PM", card: {
-            statusRows: [
-              { icon: "check", text: "Filing package assembled", color: "#3FB950" },
-              { icon: "check", text: "CEO certification — Jennifer Walsh", color: "#3FB950" },
-              { icon: "check", text: "CFO certification — Robert Tanaka", color: "#3FB950" },
-              { icon: "pending", text: "EDGAR submission in progress...", color: "#F0883E" },
-            ],
-          }},
-        ],
-      },
-      {
-        prompt: "Is the filing confirmed?",
-        userMsg: { from: "user", text: "Is the filing confirmed?", time: "6:15 PM" },
-        botMsgs: [
-          { from: "bot", text: "", time: "6:15 PM", card: {
-            title: "EDGAR Filing Accepted",
-            statusRows: [
-              { icon: "check", text: "10-K filing accepted by EDGAR at 6:12 PM EST", color: "#3FB950" },
-              { icon: "check", text: "Accession number: 0001234567-26-000142", color: "#3FB950" },
-              { icon: "check", text: "All parties notified — audit trail archived", color: "#3FB950" },
-            ],
-            bullets: ["The complete governance trail — from initial risk detection through committee review and officer certification — has been archived in Diligent for your records."],
-          }},
-        ],
-      },
-    ],
-  },
 ];
 
 /* ================================================================== */
@@ -507,33 +165,11 @@ const CHATS: Chat[] = [
 /* ================================================================== */
 
 const AVATARS: Record<string, string> = {
-  "sarah-mitchell": "https://randomuser.me/api/portraits/med/women/65.jpg",
-  "diana-reyes": "https://randomuser.me/api/portraits/med/women/44.jpg",
-  "chief-risk-officer": "https://randomuser.me/api/portraits/med/men/32.jpg",
-  "jennifer-walsh": "https://randomuser.me/api/portraits/med/women/26.jpg",
-  "marcus-webb": "https://i.pravatar.cc/150?u=marcus-webb",
-  "james-park": "https://i.pravatar.cc/150?u=james-park",
-  "david-patel": "https://i.pravatar.cc/150?u=david-patel",
-  "linda-nakamura": "https://i.pravatar.cc/150?u=linda-nakamura",
-  "james-thornton": "https://i.pravatar.cc/150?u=james-thornton",
-  "patricia-wells": "https://i.pravatar.cc/150?u=patricia-wells",
-  "michael-okafor": "https://i.pravatar.cc/150?u=michael-okafor",
-  "robert-tanaka": "https://randomuser.me/api/portraits/med/men/52.jpg",
   "marcus-chen": "https://randomuser.me/api/portraits/med/men/41.jpg",
 };
 
 const PERSON_AVATAR: Record<string, string> = {
-  "David Patel": AVATARS["david-patel"],
-  "Linda Nakamura": AVATARS["linda-nakamura"],
-  "James Thornton": AVATARS["james-thornton"],
-  "Patricia Wells": AVATARS["patricia-wells"],
-  "Michael Okafor": AVATARS["michael-okafor"],
-  "Robert Tanaka": AVATARS["robert-tanaka"],
   "Marcus Chen": AVATARS["marcus-chen"],
-  "Sarah Mitchell": AVATARS["sarah-mitchell"],
-  "Diana Reyes": AVATARS["diana-reyes"],
-  "Chief Risk Officer": AVATARS["chief-risk-officer"],
-  "Jennifer Walsh": AVATARS["jennifer-walsh"],
 };
 
 function getInitials(name: string) { return name.split(" ").map(n => n[0]).join(""); }
@@ -565,140 +201,12 @@ function DiligentAgentIcon({ size = 32, className = "" }: { size?: number; class
 }
 
 const PERSPECTIVES = [
-  { chatId: "gc",            step: 1, name: "Sarah Mitchell",       role: "General Counsel",                avatar: AVATARS["sarah-mitchell"],       initials: "SM", color: "#6264A7" },
-  { chatId: "diana",         step: 2, name: "Diana Reyes",          role: "VP Supply Chain & Operations",   avatar: AVATARS["diana-reyes"],          initials: "DR", color: "#E3008C" },
-  { chatId: "cro",           step: 3, name: "Chief Risk Officer",   role: "Risk Team Lead",                 avatar: AVATARS["chief-risk-officer"],   initials: "CR", color: "#00B7C3" },
-  { chatId: "gc-draft",      step: 4, name: "Sarah Mitchell",       role: "GC — Draft Notification",        avatar: AVATARS["sarah-mitchell"],       initials: "SM", color: "#6264A7" },
-  { chatId: "draft-review",  step: 5, name: "Sarah Mitchell",       role: "Draft Review — Group Chat",      avatar: AVATARS["sarah-mitchell"],       initials: "SM", color: "#6264A7" },
-  { chatId: "ceo",           step: 6, name: "Jennifer Walsh",       role: "CEO",                            avatar: AVATARS["jennifer-walsh"],       initials: "JW", color: "#FFB900" },
-  { chatId: "committee",     step: 7, name: "Disclosure Committee", role: "Board Committee Review",         avatar: undefined,                       initials: "DC", color: "#00CC6A" },
-  { chatId: "certification", step: 8, name: "Sarah Mitchell",       role: "Certification & EDGAR Filing",   avatar: AVATARS["sarah-mitchell"],       initials: "SM", color: "#059669" },
-  { chatId: "gov-agent",    step: 9, name: "Marcus Chen",          role: "Corporate Secretary",            avatar: AVATARS["marcus-chen"],          initials: "MC", color: "#0078D4" },
+  { chatId: "gov-agent", step: 1, name: "Marcus Chen", role: "Corporate Secretary", avatar: AVATARS["marcus-chen"], initials: "MC", color: "#0078D4" },
 ];
 
 /* ================================================================== */
 /*  Page                                                               */
 /* ================================================================== */
-
-const GC_INTRO_DETECTION: Msg = {
-  from: "bot", text: "", time: "10:00 AM", card: {
-    title: "3 Emerging Risks Detected",
-    fields: [
-      { label: "Source", value: "Diligent AI Risk Scanner" },
-      { label: "Scan completed", value: "Today at 9:58 AM" },
-    ],
-    statusRows: [
-      { icon: "check", text: "Taiwan Strait Geopolitical Tensions — Critical", color: "#F85149" },
-      { icon: "check", text: "Third-Party Vendor Data Breach — High", color: "#F0883E" },
-      { icon: "check", text: "EU Digital Markets Act — High", color: "#F0883E" },
-    ],
-    bullets: [
-      "All 3 risks cross the disclosure threshold based on SEC materiality guidance",
-      "No current 10-K language covers these risks",
-    ],
-  },
-};
-
-const GC_INTRO_THINKING: Msg = {
-  from: "bot", text: "Identifying risk owners based on role, domain expertise, and past assignment history...", time: "10:00 AM", thinking: true,
-};
-
-const GC_INTRO_OWNERS: Msg = {
-  from: "bot", text: "Here are my recommendations:", time: "10:01 AM", card: {
-    title: "Recommended Risk Owners",
-    statusRows: [
-      { icon: "check", text: "Taiwan Strait → Diana Reyes, VP Supply Chain", color: "#58A6FF" },
-      { icon: "check", text: "Vendor Breach → Marcus Webb, CISO", color: "#58A6FF" },
-      { icon: "check", text: "EU DMA → James Park, Chief Compliance Officer", color: "#58A6FF" },
-    ],
-    bullets: ["Risk owners will be interviewed by the Diligent AI Risk Manager to provide context, assess severity, and confirm disclosure recommendations."],
-    buttons: [{ label: "Assign Recommended Owners", style: "primary" }, { label: "Choose Different Owners" }],
-  },
-};
-
-const DIANA_INTRO_CARD: Msg = {
-  from: "bot", text: "Hi Diana — the General Counsel has assigned you to investigate a newly detected risk.", time: "10:03 AM", card: {
-    title: "Risk Investigation: Taiwan Strait Geopolitical Tensions",
-    fields: [
-      { label: "Severity", value: "CRITICAL", color: "#F85149" },
-      { label: "Assigned by", value: "Sarah Mitchell, General Counsel" },
-      { label: "Response needed by", value: "Mar 13, 2026 (48 hours)" },
-    ],
-    bullets: [
-      "Military exercises announced near key Taiwan shipping lanes",
-      "47% of Acme's semiconductor suppliers operate in the affected region",
-      "Estimated revenue exposure: $1.8B across 3 business units",
-      "2 existing controls flagged as insufficient",
-    ],
-  },
-};
-
-const DIANA_INTRO_QUESTION: Msg = {
-  from: "bot", text: "I'll guide you through a short assessment. First — what additional context can you provide about Acme's exposure to this risk? Consider supplier relationships, ongoing diversification efforts, and any board discussions.", time: "10:03 AM",
-};
-
-const CEO_INTRO: Msg = {
-  from: "bot", text: "Good afternoon, Jennifer. The General Counsel has submitted 3 risk disclosures for your approval.", time: "3:32 PM", card: {
-    title: "Disclosure Approval Required",
-    fields: [
-      { label: "Submitted by", value: "Sarah Mitchell, General Counsel" },
-      { label: "Documents", value: "10-K Risk Factor Draft, ERM Board Deck" },
-      { label: "AI Verification", value: "Passed — all claims substantiated", color: "#3FB950" },
-    ],
-    statusRows: [
-      { icon: "check" as const, text: "Taiwan Strait Geopolitical Tensions — Critical", color: "#F85149" },
-      { icon: "check" as const, text: "Third-Party Vendor Data Breach — High", color: "#F0883E" },
-      { icon: "check" as const, text: "EU Digital Markets Act — High", color: "#F0883E" },
-    ],
-    buttons: [
-      { label: "Approve All Disclosures", style: "primary" as const },
-      { label: "Request Changes" },
-      { label: "View Documents", href: `${WEB_BASE}/superhero/data-room` },
-    ],
-  },
-};
-
-const COMMITTEE_INTRO: Msg = {
-  from: "bot", text: "The CEO has approved all 3 risk disclosures and requested committee review before EDGAR filing.", time: "4:35 PM", card: {
-    title: "10-K Risk Factor Update — Committee Review",
-    fields: [
-      { label: "Approved by", value: "Jennifer Walsh, CEO" },
-      { label: "Risks", value: "Taiwan Strait (Critical), Vendor Breach (High), EU DMA (High)" },
-    ],
-    bullets: [
-      "Documents: 10-K Risk Factor Draft, ERM Board Deck, Context Packet",
-      "AI Verification: Passed — all claims substantiated, peer benchmarks included",
-      "Please review and confirm or request changes",
-    ],
-    buttons: [
-      { label: "Review in Board Portal", style: "primary" as const, href: `${WEB_BASE}/superhero/board-governance` },
-      { label: "View Context Packet", href: `${WEB_BASE}/superhero/context-packet` },
-    ],
-  },
-};
-
-const COMMITTEE_MEMBERS_MSGS: Msg[] = [
-  { from: "David Patel", text: "Reviewed the 10-K language and ERM deck. No changes from Audit.", time: "4:50 PM", reactions: ["👍"] },
-  { from: "Linda Nakamura", text: "Risk Committee review complete. The Taiwan Strait language looks thorough — good inclusion of the diversification timeline. No changes.", time: "5:00 PM" },
-  { from: "James Thornton", text: "Reviewed as Independent Director. No changes requested. The peer comparison data is helpful.", time: "5:10 PM" },
-  { from: "Patricia Wells", text: "Cybersecurity perspective: the vendor breach disclosure is well-scoped. No changes.", time: "5:15 PM", reactions: ["👍"] },
-  { from: "Michael Okafor", text: "Compliance review complete. EU DMA language covers the key regulatory requirements. No changes.", time: "5:20 PM" },
-];
-
-const COMMITTEE_SUMMARY: Msg = {
-  from: "bot", text: "", time: "5:25 PM", card: {
-    title: "All Committee Reviews Complete",
-    statusRows: [
-      { icon: "check" as const, text: "David Patel (Audit) — No changes", color: "#3FB950" },
-      { icon: "check" as const, text: "Linda Nakamura (Risk) — No changes", color: "#3FB950" },
-      { icon: "check" as const, text: "James Thornton (Independent) — No changes", color: "#3FB950" },
-      { icon: "check" as const, text: "Patricia Wells (Cybersecurity) — No changes", color: "#3FB950" },
-      { icon: "check" as const, text: "Michael Okafor (Compliance) — No changes", color: "#3FB950" },
-    ],
-    bullets: ["EDGAR filing package is ready. Full audit trail preserved in Diligent Data Room."],
-    buttons: [{ label: "Generate EDGAR Filing Package", style: "primary" as const }, { label: "View in Data Room", href: `${WEB_BASE}/superhero/data-room` }],
-  },
-};
 
 const GOV_AGENT_INTRO_CARD: Msg = {
   from: "bot", text: "Hi Marcus — I've flagged an upcoming governance action that requires your attention.", time: "9:15 AM", card: {
@@ -726,290 +234,23 @@ const GOV_AGENT_INTRO_QUESTION: Msg = {
   },
 };
 
-const CRO_INTRO: Msg = {
-  from: "bot", text: "The risk owner interview for *Taiwan Strait Geopolitical Tensions* is complete. Diana Reyes has provided her assessment and confirmed the disclosure recommendation.\n\nWhat would you like to do?", time: "10:22 AM", card: {
-    buttons: [
-      { label: "Evaluate the response here", style: "primary" },
-      { label: "Open Risk Essentials", href: `${WEB_BASE}/superhero/risk-discovery` },
-      { label: "Try Risk Impact Simulator", href: `${WEB_BASE}/superhero/risk-analysis` },
-    ],
-  },
-};
-
 function TeamsContent() {
   const searchParams = useSearchParams();
-  const initialChat = searchParams?.get("chat") || "gc";
+  const initialChat = searchParams?.get("chat") || "gov-agent";
   const [activeChat, setActiveChat] = useState(initialChat);
   const [chats, setChats] = useState<Chat[]>(CHATS);
   const [stepIdx, setStepIdx] = useState<Record<string, number>>(() => Object.fromEntries(CHATS.map(c => [c.id, 0])));
   const [sending, setSending] = useState(false);
-  const [gcIntroPhase, setGcIntroPhase] = useState(0); // 0=empty, 2=thinking, 3=owners shown
   const endRef = useRef<HTMLDivElement>(null);
-  const introStarted = useRef(false);
 
   const chat = chats.find(c => c.id === activeChat)!;
   const perspective = PERSPECTIVES.find(p => p.chatId === activeChat)!;
-  const sidebarCfg = SIDEBAR_PER_PERSPECTIVE[activeChat] ?? SIDEBAR_PER_PERSPECTIVE.gc;
+  const sidebarCfg = SIDEBAR_PER_PERSPECTIVE[activeChat] ?? SIDEBAR_PER_PERSPECTIVE["gov-agent"];
   const currentStep = chat.steps[stepIdx[activeChat] ?? 0];
   const hasMore = (stepIdx[activeChat] ?? 0) < chat.steps.length;
 
   const scroll = useCallback(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, []);
   useEffect(() => { scroll(); }, [activeChat, scroll]);
-
-  // GC intro: detection card -> thinking -> owners card, all automatic
-  useEffect(() => {
-    if (introStarted.current) return;
-    introStarted.current = true;
-
-    setTimeout(() => {
-      setChats(prev => prev.map(c => c.id !== "gc" ? c : { ...c, messages: [...c.messages, GC_INTRO_DETECTION] }));
-      scroll();
-    }, 800);
-
-    setTimeout(() => {
-      setChats(prev => prev.map(c => c.id !== "gc" ? c : { ...c, messages: [...c.messages, GC_INTRO_THINKING] }));
-      setGcIntroPhase(2);
-      scroll();
-    }, 2500);
-
-    setTimeout(() => {
-      setChats(prev => prev.map(c => c.id !== "gc" ? c : {
-        ...c,
-        messages: c.messages.filter(m => !m.thinking).concat(GC_INTRO_OWNERS),
-      }));
-      setGcIntroPhase(3);
-      scroll();
-    }, 5000);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Diana intro: animate in when her tab is first opened
-  const dianaIntroRan = useRef(false);
-  useEffect(() => {
-    if (activeChat !== "diana" || dianaIntroRan.current) return;
-    dianaIntroRan.current = true;
-
-    setTimeout(() => {
-      setChats(prev => prev.map(c => c.id !== "diana" ? c : { ...c, messages: [...c.messages, DIANA_INTRO_CARD] }));
-      scroll();
-    }, 600);
-
-    setTimeout(() => {
-      setChats(prev => prev.map(c => c.id !== "diana" ? c : { ...c, messages: [...c.messages, DIANA_INTRO_QUESTION] }));
-      scroll();
-    }, 2200);
-  }, [activeChat, scroll]);
-
-  // CRO intro: animate in when their tab is first opened
-  const croIntroRan = useRef(false);
-  useEffect(() => {
-    if (activeChat !== "cro" || croIntroRan.current) return;
-    croIntroRan.current = true;
-
-    setTimeout(() => {
-      setChats(prev => prev.map(c => c.id !== "cro" ? c : { ...c, messages: [...c.messages, CRO_INTRO] }));
-      scroll();
-    }, 600);
-  }, [activeChat, scroll]);
-
-  // GC Draft Notification intro: Sarah gets pinged that CRO is done
-  const gcDraftIntroRan = useRef(false);
-  useEffect(() => {
-    if (activeChat !== "gc-draft" || gcDraftIntroRan.current) return;
-    gcDraftIntroRan.current = true;
-
-    setTimeout(() => {
-      setChats(prev => prev.map(c => c.id !== "gc-draft" ? c : { ...c, messages: [...c.messages,
-        { from: "bot", text: "", time: "2:25 PM", card: {
-          title: "CRO Evaluation Complete — Taiwan Strait Risk",
-          fields: [
-            { label: "Risk", value: "Taiwan Strait — Semiconductor Supply Chain" },
-            { label: "CRO Assessment", value: "HIGH likelihood · CRITICAL impact" },
-            { label: "Risk Owner", value: "Diana Reyes — interview completed" },
-          ],
-          statusRows: [
-            { icon: "check", text: "Diana Reyes completed risk owner interview", color: "#3FB950" },
-            { icon: "check", text: "CRO severity assessment submitted", color: "#3FB950" },
-            { icon: "check", text: "Moody's geopolitical signals integrated", color: "#3FB950" },
-            { icon: "check", text: "Peer benchmark analysis complete", color: "#3FB950" },
-          ],
-        }},
-      ]}));
-      scroll();
-    }, 600);
-
-    setTimeout(() => {
-      setChats(prev => prev.map(c => c.id !== "gc-draft" ? c : { ...c, messages: [...c.messages,
-        { from: "bot", text: "Sarah — all inputs are in. Diana completed her risk owner interview, the CRO has assessed the severity as HIGH likelihood / CRITICAL impact, and I've cross-referenced Moody's signals and peer filings.\n\nI've already drafted a 10-K risk factor disclosure for the Taiwan Strait semiconductor supply chain risk. It incorporates all of the above — you can review, edit, and refine it before routing for approval.", time: "2:26 PM", card: {
-          buttons: [
-            { label: "Review Draft", style: "primary", href: `${WEB_BASE}/superhero/writer?risk=risk-taiwan&owner=diana-reyes` },
-            { label: "Remind me at 1pm" },
-          ],
-        }},
-      ]}));
-      scroll();
-    }, 2200);
-
-  }, [activeChat, scroll]);
-
-  // CEO intro: animate in when their tab is first opened
-  const ceoIntroRan = useRef(false);
-  useEffect(() => {
-    if (activeChat !== "ceo" || ceoIntroRan.current) return;
-    ceoIntroRan.current = true;
-
-    setTimeout(() => {
-      setChats(prev => prev.map(c => c.id !== "ceo" ? c : { ...c, messages: [...c.messages, CEO_INTRO] }));
-      scroll();
-    }, 600);
-  }, [activeChat, scroll]);
-
-  // Committee intro: bot announcement, then members respond one by one
-  const committeeIntroRan = useRef(false);
-  useEffect(() => {
-    if (activeChat !== "committee" || committeeIntroRan.current) return;
-    committeeIntroRan.current = true;
-
-    setTimeout(() => {
-      setChats(prev => prev.map(c => c.id !== "committee" ? c : { ...c, messages: [...c.messages, COMMITTEE_INTRO] }));
-      scroll();
-    }, 600);
-
-    COMMITTEE_MEMBERS_MSGS.forEach((msg, i) => {
-      setTimeout(() => {
-        setChats(prev => prev.map(c => c.id !== "committee" ? c : { ...c, messages: [...c.messages, msg] }));
-        scroll();
-      }, 1800 + i * 800);
-    });
-
-    setTimeout(() => {
-      setChats(prev => prev.map(c => c.id !== "committee" ? c : { ...c, messages: [...c.messages, COMMITTEE_SUMMARY] }));
-      scroll();
-    }, 1800 + COMMITTEE_MEMBERS_MSGS.length * 800 + 600);
-  }, [activeChat, scroll]);
-
-  const draftReviewIntroRan = useRef(false);
-  useEffect(() => {
-    if (activeChat !== "draft-review" || draftReviewIntroRan.current) return;
-    draftReviewIntroRan.current = true;
-
-    setTimeout(() => {
-      setChats(prev => prev.map(c => c.id !== "draft-review" ? c : { ...c, messages: [...c.messages,
-        { from: "bot", text: "", time: "3:35 PM", card: {
-          title: "10-K Disclosure Draft — Ready for Review",
-          fields: [
-            { label: "Risk", value: "Taiwan Strait — Semiconductor Supply Chain" },
-            { label: "Drafted by", value: "Sarah Mitchell (General Counsel)" },
-            { label: "Sources", value: "Diana Reyes interview, CRO assessment, Moody's signals, peer benchmarks" },
-          ],
-          statusRows: [
-            { icon: "check", text: "Draft submitted by Sarah Mitchell at 3:30 PM", color: "#3FB950" },
-            { icon: "pending", text: "Awaiting review from CRO, Diana Reyes, and Robert Tanaka", color: "#F0883E" },
-          ],
-          buttons: [
-            { label: "View the 10-K Draft", style: "primary", href: `${WEB_BASE}/superhero/writer?risk=risk-taiwan&owner=diana-reyes` },
-          ],
-        }},
-        { from: "bot", text: "Sarah has completed and submitted her first draft of the Taiwan Strait 10-K risk factor disclosure. I've compiled it using Diana's risk owner interview, the CRO's severity assessment, Moody's geopolitical signals, and peer benchmarks.\n\nI need each of you to review before it goes back to Sarah for final approval and CEO routing. Please flag anything that needs revision.", time: "3:35 PM" },
-      ]}));
-      scroll();
-    }, 600);
-
-    setTimeout(() => {
-      setChats(prev => prev.map(c => c.id !== "draft-review" ? c : { ...c, messages: [...c.messages,
-        { from: "Diana Reyes", text: "I've reviewed the draft — the supplier concentration numbers are accurate and the diversification timeline matches what we discussed in the October board materials. The only thing I'd flag is we should mention the Vietnam facility qualification is already underway, not just \"being evaluated.\"", time: "3:42 PM" },
-      ]}));
-      scroll();
-    }, 2400);
-
-    setTimeout(() => {
-      setChats(prev => prev.map(c => c.id !== "draft-review" ? c : { ...c, messages: [...c.messages,
-        { from: "Chief Risk Officer", text: "Looks solid. The severity language aligns with our internal assessment — HIGH likelihood, CRITICAL impact. I'd keep the current phrasing. Diana's point about Vietnam is valid; let's update that.", time: "3:48 PM" },
-      ]}));
-      scroll();
-    }, 3800);
-
-    setTimeout(() => {
-      setChats(prev => prev.map(c => c.id !== "draft-review" ? c : { ...c, messages: [...c.messages,
-        { from: "Robert Tanaka", text: "From a financial reporting perspective, the 47% concentration figure needs to tie back to our supplier audit data — I've confirmed it does. The materiality threshold language is appropriate. No issues from my side.", time: "3:55 PM" },
-      ]}));
-      scroll();
-    }, 5200);
-
-    setTimeout(() => {
-      setChats(prev => prev.map(c => c.id !== "draft-review" ? c : { ...c, messages: [...c.messages,
-        { from: "bot", text: "All reviewers have weighed in. Here's the summary:", time: "3:56 PM", card: {
-          title: "Review Complete — 1 Minor Edit Suggested",
-          statusRows: [
-            { icon: "check", text: "Diana Reyes — Approved with minor edit (Vietnam language)", color: "#3FB950" },
-            { icon: "check", text: "Chief Risk Officer — Approved, no changes", color: "#3FB950" },
-            { icon: "check", text: "Robert Tanaka (CFO) — Approved, no changes", color: "#3FB950" },
-          ],
-          bullets: ["Diana suggests updating \"evaluation of alternative sourcing regions\" to \"active qualification of alternative suppliers in Vietnam\" to reflect current status."],
-        }},
-      ]}));
-      scroll();
-    }, 6400);
-  }, [activeChat, scroll]);
-
-  // Certification intro: AI announces committee is done, prompts CEO/CFO to certify
-  const certIntroRan = useRef(false);
-  useEffect(() => {
-    if (activeChat !== "certification" || certIntroRan.current) return;
-    certIntroRan.current = true;
-
-    setTimeout(() => {
-      setChats(prev => prev.map(c => c.id !== "certification" ? c : { ...c, messages: [...c.messages,
-        { from: "bot", text: "", time: "5:40 PM", card: {
-          title: "Disclosure Committee Review Complete",
-          fields: [
-            { label: "Committee", value: "All 5 members reviewed — no changes" },
-            { label: "Documents", value: "10-K Risk Factors, ERM Deck, Context Packets" },
-            { label: "Board Review", value: "Approved in Diligent Boards" },
-          ],
-          statusRows: [
-            { icon: "check", text: "Disclosure Committee — all members approved", color: "#3FB950" },
-            { icon: "check", text: "Board book materials reviewed and approved", color: "#3FB950" },
-            { icon: "pending", text: "Officer certifications required before EDGAR filing", color: "#F0883E" },
-          ],
-        }},
-        { from: "bot", text: "Everything has been reviewed and approved. Before I can submit the 10-K filing to EDGAR, I need officer certifications from Jennifer (CEO) and Robert (CFO) under SOX Sections 302 and 906.\n\nJennifer, Robert — please confirm your certification below.", time: "5:41 PM" },
-      ]}));
-      scroll();
-    }, 600);
-
-    setTimeout(() => {
-      setChats(prev => prev.map(c => c.id !== "certification" ? c : { ...c, messages: [...c.messages,
-        { from: "Jennifer Walsh", text: "I've reviewed the updated 10-K risk factors, the ERM board deck, and all supporting context packets. I certify that the disclosures are accurate and complete to the best of my knowledge.\n\nSOX Section 302 / 906 — certified.", time: "5:50 PM" },
-      ]}));
-      scroll();
-    }, 2400);
-
-    setTimeout(() => {
-      setChats(prev => prev.map(c => c.id !== "certification" ? c : { ...c, messages: [...c.messages,
-        { from: "Robert Tanaka", text: "Confirmed from the financial reporting side. The materiality thresholds and concentration figures tie to our audited supplier data. SOX Section 302 / 906 — certified.", time: "5:55 PM" },
-      ]}));
-      scroll();
-    }, 3800);
-
-    setTimeout(() => {
-      setChats(prev => prev.map(c => c.id !== "certification" ? c : { ...c, messages: [...c.messages,
-        { from: "bot", text: "Both officer certifications received. I'm ready to assemble and submit the filing package to EDGAR.\n\nThe package includes the updated 10-K risk factors, all officer certifications, and the complete audit trail from risk detection through committee approval.", time: "5:58 PM", card: {
-          title: "Ready to File",
-          statusRows: [
-            { icon: "check", text: "CEO certification — Jennifer Walsh", color: "#3FB950" },
-            { icon: "check", text: "CFO certification — Robert Tanaka", color: "#3FB950" },
-            { icon: "check", text: "Filing package assembled", color: "#3FB950" },
-          ],
-          buttons: [
-            { label: "Continue — Submit via EDGAR", style: "primary" },
-            { label: "Cancel" },
-          ],
-        }},
-      ]}));
-      scroll();
-    }, 5200);
-  }, [activeChat, scroll]);
 
   // Gov Agent intro: term expiry notification, then replacement question
   const govIntroRan = useRef(false);
@@ -1029,7 +270,6 @@ function TeamsContent() {
   }, [activeChat, scroll]);
 
   const handleSend = () => {
-    if (activeChat === "gc" && gcIntroPhase < 3) return;
     if (!currentStep || sending) return;
     setSending(true);
     const step = currentStep;
@@ -1063,12 +303,9 @@ function TeamsContent() {
         <div className="flex items-center gap-2 mb-2">
           <div className="flex items-center gap-1 bg-white rounded-lg border border-[#DDD] p-0.5 shrink-0">
             <span className="px-3 py-1 rounded-md bg-[#6264A7] text-white text-[11px] font-semibold">Teams</span>
-            <a href={SLACK_BASE} className="px-3 py-1 rounded-md text-[11px] font-medium text-[#888] hover:bg-[#F0F0F0] transition-colors">Slack</a>
           </div>
-          <div className="h-4 w-px bg-[#DDD] mx-1" />
-          <a href="/gc" className="text-[11px] text-[#6264A7] hover:underline font-medium whitespace-nowrap">GC End-to-End →</a>
           <div className="flex-1 h-px bg-[#DDD]" />
-          <p className="text-[10px] text-[#AAA] shrink-0">Select a persona to see their perspective</p>
+          <p className="text-[10px] text-[#AAA] shrink-0">Subsidiary Governance — Director Replacement Workflow</p>
         </div>
         <div className="flex items-center gap-2 overflow-x-auto pb-1">
           {PERSPECTIVES.map(p => {
@@ -1369,9 +606,7 @@ function TeamsContent() {
             {/* Input */}
             <div className="bg-[#292828] border-t border-[#3b3a39] px-4 py-2 shrink-0">
               <div className="flex items-center gap-2 bg-[#3b3a39] rounded-md px-3 py-2">
-                {activeChat === "gc" && gcIntroPhase < 3 ? (
-                  <span className="flex-1 text-[13px] text-[#8B8B8B]">Type a message</span>
-                ) : hasMore ? (
+                {hasMore ? (
                   <button onClick={handleSend} className="flex-1 text-left text-[13px] text-white truncate cursor-pointer hover:text-white/80 transition-colors">{currentStep?.prompt}</button>
                 ) : (() => {
                   const curIdx = PERSPECTIVES.findIndex(p => p.chatId === activeChat);
@@ -1391,8 +626,8 @@ function TeamsContent() {
                   <button className="hover:text-white transition-colors"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg></button>
                   <button
                     onClick={handleSend}
-                    disabled={sending || (activeChat === "gc" && gcIntroPhase < 3) || !hasMore}
-                    className={`w-8 h-8 rounded flex items-center justify-center transition-all ${(!sending && !(activeChat === "gc" && gcIntroPhase < 3) && hasMore) ? "bg-[#6264A7] hover:bg-[#7B7FBF] text-white cursor-pointer" : "text-[#555] cursor-default"}`}
+                    disabled={sending || !hasMore}
+                    className={`w-8 h-8 rounded flex items-center justify-center transition-all ${(!sending && hasMore) ? "bg-[#6264A7] hover:bg-[#7B7FBF] text-white cursor-pointer" : "text-[#555] cursor-default"}`}
                   >
                     {sending ? (
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
