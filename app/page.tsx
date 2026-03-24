@@ -81,9 +81,10 @@ const FAKE_TEAM_CHATS: FakeChat[] = [
 ];
 
 const SIDEBAR_PER_PERSPECTIVE: Record<string, SidebarConfig> = {
-  "gov-agent":         { urgentIds: ["gov-agent"],                           fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
-  "meeting-materials": { urgentIds: [], teamAgentId: "meeting-materials",    fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
+  "gov-agent":         { urgentIds: ["gov-agent"],                               fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
+  "meeting-materials": { urgentIds: [], teamAgentId: "meeting-materials",        fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
   "q3-portfolio":      { urgentIds: ["q3-channel"], teamAgentId: "q3-portfolio", fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
+  "bulk-directors":    { urgentIds: [], teamAgentId: "bulk-directors",           fakeTeam: FAKE_TEAM_CHATS.slice(0, 5) },
 };
 
 /* ================================================================== */
@@ -285,6 +286,98 @@ const CHATS: Chat[] = [
     ],
   },
 
+  /* ---- Bulk Director Appointments ---- */
+  {
+    id: "bulk-directors",
+    name: "Diligent Governance Agent",
+    initials: "GA",
+    color: "#0078D4",
+    section: "favorites",
+    preview: "6 director appointments pending in your spreadsheet...",
+    previewTime: "11:02 AM",
+    messages: [],
+    steps: [
+      {
+        prompt: "Parse & queue appointments",
+        userMsg: { from: "user", text: "Yes — parse everything and queue what you can. Flag anything that needs my input.", time: "11:04 AM" },
+        botMsgs: [
+          { from: "bot", text: "Parsing Director_Appointments_Q2_2026.xlsx and cross-checking against Diligent entity records...", time: "11:04 AM", thinking: true },
+          { from: "bot", text: "", time: "11:05 AM", card: {
+            title: "Spreadsheet Parsed — 6 Director Appointments",
+            fields: [
+              { label: "Appointment 1", value: "Dr. Elena Vasquez → Acme Holdings Europe Ltd. (NED)" },
+              { label: "Appointment 2", value: "Thomas Müller → Acme GmbH (Supervisory Board)" },
+              { label: "Appointment 3", value: "Isabelle Renard → Acme SAS (Independent Director)" },
+              { label: "Appointment 4", value: "Carlos Mendoza → Acme Iberia S.L. (Director)" },
+              { label: "Appointment 5", value: "Valentina Romano → Acme Italia S.r.l. (Administrator)" },
+              { label: "Appointment 6", value: "James Hargreaves → Acme Holdings Europe Ltd. (Chair re-election)" },
+            ],
+            statusRows: [
+              { icon: "check", text: "3 appointments queued in Diligent (Vasquez, Renard, Romano)", color: "#3FB950" },
+              { icon: "pending", text: "Thomas Müller — nationality required for DE supervisory board filing", color: "#F0883E" },
+              { icon: "pending", text: "Carlos Mendoza — possible conflict: existing Director Miguel Mendoza at Acme Iberia", color: "#F0883E" },
+              { icon: "pending", text: "James Hargreaves — new term start and end dates missing", color: "#F0883E" },
+            ],
+            buttons: [
+              { label: "Resolve all 3 issues", style: "primary" },
+              { label: "File the 3 ready ones now" },
+            ],
+          }},
+        ],
+      },
+      {
+        prompt: "Resolve all 3 issues",
+        userMsg: { from: "user", text: "Thomas Müller is German. Carlos Mendoza is not related to Miguel — different family entirely. James Hargreaves's new term runs July 1, 2026 to June 30, 2030.", time: "11:07 AM" },
+        botMsgs: [
+          { from: "bot", text: "Updating all 3 records and re-validating against jurisdiction requirements...", time: "11:07 AM", thinking: true },
+          { from: "bot", text: "", time: "11:08 AM", card: {
+            title: "All 6 Appointments — Validated & Ready",
+            statusRows: [
+              { icon: "check", text: "Dr. Elena Vasquez — Acme Holdings Europe Ltd. (UK) ✓", color: "#3FB950" },
+              { icon: "check", text: "Thomas Müller (German) — Acme GmbH (DE) ✓", color: "#3FB950" },
+              { icon: "check", text: "Isabelle Renard — Acme SAS (FR) ✓", color: "#3FB950" },
+              { icon: "check", text: "Carlos Mendoza (no conflict confirmed) — Acme Iberia S.L. (ES) ✓", color: "#3FB950" },
+              { icon: "check", text: "Valentina Romano — Acme Italia S.r.l. (IT) ✓", color: "#3FB950" },
+              { icon: "check", text: "James Hargreaves (Jul 1 2026 – Jun 30 2030) — Acme Holdings Europe Ltd. (UK) ✓", color: "#3FB950" },
+            ],
+            bullets: [
+              "All 6 appointments validated against local jurisdiction requirements",
+              "Regulatory filings prepared for Companies House (UK), Handelsregister (DE), Greffe du Tribunal (FR), Registro Mercantil (ES), Camera di Commercio (IT)",
+            ],
+            buttons: [
+              { label: "Submit all 6 to Diligent", style: "primary" },
+              { label: "Review individual appointments" },
+            ],
+          }},
+        ],
+      },
+      {
+        prompt: "Submit all 6 to Diligent",
+        userMsg: { from: "user", text: "Submit all 6.", time: "11:09 AM" },
+        botMsgs: [
+          { from: "bot", text: "", time: "11:09 AM", card: {
+            title: "All 6 Director Appointments Submitted",
+            statusRows: [
+              { icon: "check", text: "Dr. Elena Vasquez — Companies House filing queued (UK)", color: "#3FB950" },
+              { icon: "check", text: "Thomas Müller — Handelsregister filing queued (DE)", color: "#3FB950" },
+              { icon: "check", text: "Isabelle Renard — Greffe du Tribunal filing queued (FR)", color: "#3FB950" },
+              { icon: "check", text: "Carlos Mendoza — Registro Mercantil filing queued (ES)", color: "#3FB950" },
+              { icon: "check", text: "Valentina Romano — Camera di Commercio filing queued (IT)", color: "#3FB950" },
+              { icon: "check", text: "James Hargreaves — re-election queued, effective Jul 1 2026 (UK)", color: "#3FB950" },
+            ],
+            file: { name: "Director_Appointments_Batch_Q2_2026_Submission.pdf", size: "2.1 MB" },
+            bullets: [
+              "Onboarding packs sent to all 5 new appointees",
+              "D&O insurance team notified for 5 new directors",
+              "I'll track each filing and notify you when each jurisdiction confirms",
+            ],
+          }},
+          { from: "bot", text: "All done. I'll monitor progress across all 5 jurisdictions and send you a weekly digest until every appointment is officially registered.", time: "11:10 AM" },
+        ],
+      },
+    ],
+  },
+
   /* ---- Meeting Materials — Acme Holdings Europe Ltd. Q2 Board Meeting ---- */
   {
     id: "meeting-materials",
@@ -424,6 +517,7 @@ const PERSPECTIVES = [
   { chatId: "gov-agent",         step: 1, name: "Marcus Chen", role: "Director Replacement",     avatar: AVATARS["marcus-chen"], initials: "MC", color: "#0078D4" },
   { chatId: "meeting-materials", step: 2, name: "Marcus Chen", role: "Meeting Materials",         avatar: AVATARS["marcus-chen"], initials: "MC", color: "#0078D4" },
   { chatId: "q3-portfolio",      step: 3, name: "Marcus Chen", role: "Q3 Portfolio Planning",    avatar: AVATARS["marcus-chen"], initials: "MC", color: "#0078D4" },
+  { chatId: "bulk-directors",    step: 4, name: "Marcus Chen", role: "Bulk Director Appointments", avatar: AVATARS["marcus-chen"], initials: "MC", color: "#0078D4" },
 ];
 
 /* ================================================================== */
@@ -505,6 +599,32 @@ const MEETING_INTRO_QUESTION: Msg = {
       { label: "Review & approve agenda", style: "primary" },
       { label: "Build from scratch" },
       { label: "Remind me tomorrow" },
+    ],
+  },
+};
+
+const BULK_INTRO_CARD: Msg = {
+  from: "bot", text: "Hi Marcus — I found a director appointment spreadsheet in your SharePoint that hasn't been processed in Diligent yet.", time: "11:02 AM", card: {
+    title: "Pending Director Appointments — SharePoint",
+    fields: [
+      { label: "File", value: "Director_Appointments_Q2_2026.xlsx" },
+      { label: "Location", value: "SharePoint · Legal / Subsidiary Governance" },
+      { label: "Appointments found", value: "6 director appointments", color: "#F0883E" },
+      { label: "Entities affected", value: "4 subsidiaries across 5 jurisdictions" },
+    ],
+    statusRows: [
+      { icon: "check", text: "3 appointments ready to queue immediately", color: "#3FB950" },
+      { icon: "pending", text: "3 appointments need clarification before filing", color: "#F0883E" },
+    ],
+  },
+};
+
+const BULK_INTRO_QUESTION: Msg = {
+  from: "bot", text: "Want me to parse all 6 appointments and queue the ready ones in Diligent while I flag the ones that need your input?", time: "11:03 AM", card: {
+    buttons: [
+      { label: "Parse & queue appointments", style: "primary" },
+      { label: "Show me the spreadsheet first" },
+      { label: "Remind me later" },
     ],
   },
 };
@@ -610,6 +730,23 @@ function TeamsContent() {
 
     setTimeout(() => {
       setChats(prev => prev.map(c => c.id !== "q3-portfolio" ? c : { ...c, messages: [...c.messages, Q3_INTRO_QUESTION] }));
+      scroll();
+    }, 2200);
+  }, [activeChat, scroll]);
+
+  // Bulk Director Appointments intro: spreadsheet detected, then parse question
+  const bulkIntroRan = useRef(false);
+  useEffect(() => {
+    if (activeChat !== "bulk-directors" || bulkIntroRan.current) return;
+    bulkIntroRan.current = true;
+
+    setTimeout(() => {
+      setChats(prev => prev.map(c => c.id !== "bulk-directors" ? c : { ...c, messages: [...c.messages, BULK_INTRO_CARD] }));
+      scroll();
+    }, 600);
+
+    setTimeout(() => {
+      setChats(prev => prev.map(c => c.id !== "bulk-directors" ? c : { ...c, messages: [...c.messages, BULK_INTRO_QUESTION] }));
       scroll();
     }, 2200);
   }, [activeChat, scroll]);
