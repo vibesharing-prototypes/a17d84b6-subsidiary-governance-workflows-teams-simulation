@@ -514,10 +514,10 @@ function DiligentAgentIcon({ size = 32, className = "" }: { size?: number; class
 }
 
 const PERSPECTIVES = [
-  { chatId: "gov-agent",         step: 1, name: "Marcus Chen", role: "Director Replacement",     avatar: AVATARS["marcus-chen"], initials: "MC", color: "#0078D4" },
-  { chatId: "meeting-materials", step: 2, name: "Marcus Chen", role: "Meeting Materials",         avatar: AVATARS["marcus-chen"], initials: "MC", color: "#0078D4" },
-  { chatId: "q3-portfolio",      step: 3, name: "Marcus Chen", role: "Q3 Portfolio Planning",    avatar: AVATARS["marcus-chen"], initials: "MC", color: "#0078D4" },
-  { chatId: "bulk-directors",    step: 4, name: "Marcus Chen", role: "Bulk Director Appointments", avatar: AVATARS["marcus-chen"], initials: "MC", color: "#0078D4" },
+  { chatId: "gov-agent",         step: 1, name: "Marcus Chen", role: "Director Replacement",      avatar: AVATARS["marcus-chen"], initials: "MC", color: "#0078D4" },
+  { chatId: "bulk-directors",    step: 2, name: "Marcus Chen", role: "Bulk Director Appointments", avatar: AVATARS["marcus-chen"], initials: "MC", color: "#0078D4" },
+  { chatId: "meeting-materials", step: 3, name: "Marcus Chen", role: "Meeting Materials",          avatar: AVATARS["marcus-chen"], initials: "MC", color: "#0078D4" },
+  { chatId: "q3-portfolio",      step: 4, name: "Marcus Chen", role: "Q3 Portfolio Planning",     avatar: AVATARS["marcus-chen"], initials: "MC", color: "#0078D4" },
 ];
 
 /* ================================================================== */
@@ -663,7 +663,9 @@ function TeamsContent() {
   const [stepIdx, setStepIdx] = useState<Record<string, number>>(() => Object.fromEntries(CHATS.map(c => [c.id, 0])));
   const [sending, setSending] = useState(false);
   const [diligentPanelOpen, setDiligentPanelOpen] = useState(false);
+  const [diligentPanelMsgs, setDiligentPanelMsgs] = useState<Msg[]>([]);
   const endRef = useRef<HTMLDivElement>(null);
+  const diligentPanelEndRef = useRef<HTMLDivElement>(null);
 
   const chat = chats.find(c => c.id === activeChat)!;
   const perspective = PERSPECTIVES.find(p => p.chatId === activeChat) ?? PERSPECTIVES.find(p => p.chatId === "q3-portfolio")!;
@@ -673,6 +675,11 @@ function TeamsContent() {
 
   const scroll = useCallback(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, []);
   useEffect(() => { scroll(); }, [activeChat, scroll]);
+
+  // Reset Diligent panel messages when switching away from bulk scenario
+  useEffect(() => {
+    if (activeChat !== "bulk-directors") setDiligentPanelMsgs([]);
+  }, [activeChat]);
 
   // Gov Agent intro: term expiry notification, then replacement question
   const govIntroRan = useRef(false);
@@ -733,6 +740,37 @@ function TeamsContent() {
       scroll();
     }, 2200);
   }, [activeChat, scroll]);
+
+  // Diligent panel — bulk scenario: Marcus proactively shares spreadsheet
+  useEffect(() => {
+    if (!diligentPanelOpen || activeChat !== "bulk-directors" || diligentPanelMsgs.length > 0) return;
+
+    const scrollPanel = () => diligentPanelEndRef.current?.scrollIntoView({ behavior: "smooth" });
+
+    setTimeout(() => {
+      setDiligentPanelMsgs([{
+        from: "user",
+        text: "Hey — I have a batch of new director appointments to process across our subsidiaries. I pulled the data into a spreadsheet. Can you parse it and queue everything up in Diligent?",
+        time: "11:02 AM",
+        card: { file: { name: "Director_Appointments_Q2_2026.xlsx", size: "48 KB" } },
+      }]);
+      scrollPanel();
+    }, 600);
+
+    setTimeout(() => {
+      setDiligentPanelMsgs(prev => [...prev, { from: "bot", text: "On it — parsing your spreadsheet now...", time: "11:02 AM", thinking: true }]);
+      scrollPanel();
+    }, 1600);
+
+    setTimeout(() => {
+      setDiligentPanelMsgs(prev => [
+        ...prev.filter(m => !m.thinking),
+        { ...BULK_INTRO_CARD, time: "11:03 AM", text: "Done. Here's what I found:" },
+        { ...BULK_INTRO_QUESTION, time: "11:03 AM", text: "3 are ready to queue immediately. The other 3 need a quick clarification from you before I can file them. Want me to walk you through the issues?" },
+      ]);
+      scrollPanel();
+    }, 3000);
+  }, [diligentPanelOpen, activeChat, diligentPanelMsgs.length]);
 
   // Bulk Director Appointments intro: spreadsheet detected, then parse question
   const bulkIntroRan = useRef(false);
@@ -897,7 +935,7 @@ function TeamsContent() {
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
                 </button>
               </div>
-              {/* Welcome messages */}
+              {/* Messages or welcome screen */}
               <div className="flex-1 overflow-y-auto px-6 py-4 min-h-0">
                 <div className="max-w-[820px] mx-auto">
                   <div className="flex items-center gap-3 my-4">
@@ -905,33 +943,118 @@ function TeamsContent() {
                     <span className="text-[11px] text-[#8B8B8B]">Today</span>
                     <div className="flex-1 h-px bg-[#333]" />
                   </div>
-                  <div className="flex justify-start gap-2">
-                    <DiligentAgentIcon size={32} className="mt-0.5 shrink-0" />
-                    <div className="max-w-[70%]">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-[12px] font-semibold text-white">Diligent Governance Agent</span>
-                        <span className="text-[10px] text-[#8B8B8B]">Just now</span>
-                      </div>
-                      <div className="rounded-md px-3 py-2.5 bg-[#292828] space-y-2">
-                        <p className="text-[13px] text-white leading-relaxed">Hi Marcus! I&apos;m the <strong>Diligent Governance Agent</strong> — your AI assistant for subsidiary governance, board management, and entity compliance across your full portfolio.</p>
-                        <p className="text-[13px] text-white leading-relaxed">Start a conversation by asking me a question, or try one of these prompts to get started.</p>
-                        <div className="pt-1 space-y-1.5">
-                          {[
-                            "What governance actions are due this quarter?",
-                            "Help me draft a board resolution",
-                            "Which subsidiaries have upcoming filing deadlines?",
-                            "Who should I assign this compliance task to?",
-                            "Summarize the board pack for Acme Holdings Europe",
-                          ].map(prompt => (
-                            <div key={prompt} className="flex items-start gap-1.5">
-                              <span className="text-[#8B8B8B] text-[12px] mt-0.5 shrink-0">•</span>
-                              <p className="text-[13px] text-[#58A6FF] leading-relaxed hover:underline cursor-pointer">{prompt}</p>
-                            </div>
-                          ))}
+                  {diligentPanelMsgs.length === 0 ? (
+                    /* Generic welcome screen */
+                    <div className="flex justify-start gap-2">
+                      <DiligentAgentIcon size={32} className="mt-0.5 shrink-0" />
+                      <div className="max-w-[70%]">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="text-[12px] font-semibold text-white">Diligent Governance Agent</span>
+                          <span className="text-[10px] text-[#8B8B8B]">Just now</span>
+                        </div>
+                        <div className="rounded-md px-3 py-2.5 bg-[#292828] space-y-2">
+                          <p className="text-[13px] text-white leading-relaxed">Hi Marcus! I&apos;m the <strong>Diligent Governance Agent</strong> — your AI assistant for subsidiary governance, board management, and entity compliance across your full portfolio.</p>
+                          <p className="text-[13px] text-white leading-relaxed">Start a conversation by asking me a question, or try one of these prompts to get started.</p>
+                          <div className="pt-1 space-y-1.5">
+                            {[
+                              "What governance actions are due this quarter?",
+                              "Help me draft a board resolution",
+                              "Which subsidiaries have upcoming filing deadlines?",
+                              "Who should I assign this compliance task to?",
+                              "Summarize the board pack for Acme Holdings Europe",
+                            ].map(p => (
+                              <div key={p} className="flex items-start gap-1.5">
+                                <span className="text-[#8B8B8B] text-[12px] mt-0.5 shrink-0">•</span>
+                                <p className="text-[13px] text-[#58A6FF] leading-relaxed hover:underline cursor-pointer">{p}</p>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  ) : (
+                    /* Scenario-specific conversation */
+                    <div className="space-y-3">
+                      {diligentPanelMsgs.map((msg, i) => {
+                        const isUser = msg.from === "user";
+                        const isBot = msg.from === "bot";
+                        return (
+                          <div key={i} className={`flex ${isUser ? "justify-end" : "justify-start"} gap-2`}>
+                            {!isUser && <DiligentAgentIcon size={32} className="mt-0.5 shrink-0" />}
+                            <div className="max-w-[70%]">
+                              <div className={`flex items-center gap-2 mb-0.5 ${isUser ? "justify-end" : ""}`}>
+                                {!isUser && <span className="text-[12px] font-semibold text-white">Diligent Governance Agent</span>}
+                                {isUser && <span className="text-[12px] font-semibold text-white">Marcus Chen</span>}
+                                <span className="text-[10px] text-[#8B8B8B]">{msg.time}</span>
+                              </div>
+                              <div className={`rounded-md px-3 py-2 ${isUser ? "bg-[#6264A7]" : "bg-[#292828]"}`}>
+                                {msg.thinking ? (
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-[13px] text-[#A8A8A8] italic">{msg.text}</p>
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      <div className="w-1.5 h-1.5 rounded-full bg-[#6264A7] animate-bounce" style={{ animationDelay: "0ms" }} />
+                                      <div className="w-1.5 h-1.5 rounded-full bg-[#6264A7] animate-bounce" style={{ animationDelay: "150ms" }} />
+                                      <div className="w-1.5 h-1.5 rounded-full bg-[#6264A7] animate-bounce" style={{ animationDelay: "300ms" }} />
+                                    </div>
+                                  </div>
+                                ) : msg.text ? (
+                                  <p className="text-[13px] text-white leading-relaxed">{msg.text}</p>
+                                ) : null}
+                                {msg.card?.file && (
+                                  <div className={`flex items-center gap-3 bg-[#1A1A1A] rounded p-2 ${msg.text ? "mt-2" : ""}`}>
+                                    <div className="w-9 h-9 rounded bg-[#217346] flex items-center justify-center shrink-0">
+                                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><path d="M14 2v6h6" /></svg>
+                                    </div>
+                                    <div>
+                                      <p className="text-[12px] text-white font-medium">{msg.card.file.name}</p>
+                                      <p className="text-[10px] text-[#8B8B8B]">{msg.card.file.size}</p>
+                                    </div>
+                                  </div>
+                                )}
+                                {msg.card?.title && (
+                                  <div className={`rounded-md bg-[#333333] border border-[#444] overflow-hidden ${msg.text ? "mt-2" : ""}`}>
+                                    <div className="px-3 py-2 border-b border-[#444] bg-[#3a3a3a]"><p className="text-[13px] font-bold text-white">{msg.card.title}</p></div>
+                                    <div className="px-3 py-2 space-y-2">
+                                      {msg.card.fields && (
+                                        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                                          {msg.card.fields.map((f, fi) => (
+                                            <div key={fi}>
+                                              <p className="text-[10px] text-[#8B8B8B] uppercase tracking-wider">{f.label}</p>
+                                              <p className="text-[12px] font-medium" style={{ color: f.color ?? "#E0E0E0" }}>{f.value}</p>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                      {msg.card.statusRows && (
+                                        <div className="space-y-1">
+                                          {msg.card.statusRows.map((sr, si) => (
+                                            <div key={si} className="flex items-center gap-2">
+                                              {sr.icon === "check" && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={sr.color ?? "#3FB950"} strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>}
+                                              {sr.icon === "pending" && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={sr.color ?? "#F0883E"} strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>}
+                                              {sr.icon === "clock" && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={sr.color ?? "#8B8B8B"} strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>}
+                                              <p className="text-[12px]" style={{ color: sr.color ?? "#E0E0E0" }}>{sr.text}</p>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                    {msg.card.buttons && (
+                                      <div className="flex items-center gap-2 px-3 py-2 border-t border-[#444] flex-wrap">
+                                        {msg.card.buttons.map((btn, bi) => (
+                                          <button key={bi} onClick={btn.style === "primary" ? () => { setDiligentPanelOpen(false); setActiveChat("bulk-directors"); } : undefined} className={`px-3 py-1.5 rounded text-[12px] font-medium transition-colors ${btn.style === "primary" ? "bg-[#6264A7] text-white hover:bg-[#7B7FBF] cursor-pointer" : "border border-[#555] text-[#C0C0C0] hover:bg-[#3d3d42]"}`}>{btn.label}</button>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <div ref={diligentPanelEndRef} />
+                    </div>
+                  )}
                 </div>
               </div>
               {/* Blank input */}
